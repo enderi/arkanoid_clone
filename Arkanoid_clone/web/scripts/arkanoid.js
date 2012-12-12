@@ -16,3 +16,12 @@ $(document).ready(function(){
         context.fillRect(i+1,101,44,23);
     }
 });
+
+
+
+Blocks = Backbone.Model.extend({
+    initialize: function(){
+        // blocks:
+        
+    }
+});
