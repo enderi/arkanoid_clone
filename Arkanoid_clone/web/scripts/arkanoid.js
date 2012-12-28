@@ -1,222 +1,469 @@
-window.requestAnimFrame = (function(){
-    return window.requestAnimationFrame       || 
-           window.webkitRequestAnimationFrame || 
-           window.mozRequestAnimationFrame    || 
-           window.oRequestAnimationFrame      || 
-           window.msRequestAnimationFrame     || 
-           function(/* kutsuttava funktio */ callback, /* elementti */ element){
-               window.setTimeout(callback, 1000 / 60);
-           };
-    })();
 
-var startTime = (new Date).getTime();
+function vectorToStage(vector, color){	
+	new Path()
+		.moveTo(vector.getX(), vector.getY())
+		.lineTo(vector.getX() + vector.compX(), vector.getY() + vector.compY())
+		.closePath()
+		.stroke(color, 2)
+		.addTo(stage);
+}
 
-$(document).ready(function(){ 
-    arkanoid.model.balls.addBall(arkanoid.model.pad.getPosition(),422);
-    view.tick();
-    var context = $("#gamearea")[0].getContext("2d");
-    for(var i=21;i<598;i=i+46){
-        /*
-        arkanoid.model.blocks.addBlock(i,100,'white',0);
-        arkanoid.model.blocks.addBlock(i,125,'white',0);
-        arkanoid.model.blocks.addBlock(i,150,'white',0);
-        arkanoid.model.blocks.addBlock(i,175,'white',0);
-        arkanoid.model.blocks.addBlock(i,200,'white',0);
-        */
-        arkanoid.model.blocks.addBlock(i,100,'grey',0);
-        arkanoid.model.blocks.addBlock(i,125,'blue',0);
-        arkanoid.model.blocks.addBlock(i,150,'red',0);
-        arkanoid.model.blocks.addBlock(i,175,'orange',0);
-        arkanoid.model.blocks.addBlock(i,200,'green',0);
-        
-    }
-   /*
-    $.each(arkanoid.model.blocks.getBlocks(),function(i, block){
-        drawBlock(block, context);
-    });
-    
-    drawPad(context);
-    
-    arkanoid.model.balls.addBall(arkanoid.model.pad.getPosition(),422);
-    $.each(arkanoid.model.balls.getBalls(), function(i, ball){
-        //drawBall(ball,context);
-    });
-    b = arkanoid.model.balls.getBalls()[0];
-    b.starting_x=b.x;
-    b.starting_y=b.y;
-    for (var t=0;t<50;t++){
-        console.log(b.getPositionX(t)+ "-"+b.getPositionY(t));
-        context.fillRect(b.getPositionX(t),b.getPositionY(t),1,1);
-    }
-    */
+var defaults = {
+	width: stage.width,
+	height: stage.height,
+	colWidth: stage.width / 13,
+	rowHeight: stage.height / 20
+}
+
+
+var Arkanoid={};
+
+Arkanoid.logic = (function(){
+  var objects = new Array();
+	var balls = new Array();
+	var blocks = new Array();
+	var paddle = {};
+	
+	var latestTime = new Date().getTime();
+	
+	
+	
+	function initialize(){
+
+		paddle = new Paddle();
+		stage.on('pointermove', function(e){
+			if (e.target !== stage) return;
+			paddle.changePosition(e.stageX);
+
+		});
+		balls.push(addBall(paddle.x+paddle.width/4*3, paddle.y-10));
+		
+		objects.push(new HittableObject(paddle));
+		objects.push(new HittableObject(new GameArea()));		
+		
+		addBlocks(1);
+		
+		
+		for ( i=0; i < balls.length; i++){
+			balls[i].setDirection(-45);
+			balls[i].setSpeed(.5, new Date().getTime());
+		}
+	latestTime = new Date().getTime();
+		stage.on('tick', function (){
+			timingDevice();
+		});
+	}
+	
+	function addBall(x,y,direction){
+		var b = new Ball(x, y, direction);
+		b.object.fill('white').addTo(stage);
+		return b;
+	}
+	
+	function stopBall(index){
+//		balls[index].setSpeed(0, new Date().getTime());
+		balls.splice(index,1);
+	}
+	
+	// gamearea is divide into 13 columns and 50 rows
+	function addBlocks(levelNumber){
+		var blocksJSON = levels['levels'][levelNumber-1]['blocks'];
+		
+		for(var i = 0; i < blocksJSON.length; i++){
+				blocks.push(new Block(blocksJSON[i]['x'], 
+								blocksJSON[i]['y'], 
+								blocksJSON[i]['type'],
+								blocksJSON[i]['color']));
+		}
+		
+		for(i = 0; i< blocks.length; i++){
+			objects.push(new HittableObject(blocks[i]));
+		}
+				
+	}
+	
+	function timingDevice(){
+		var currentTime = new Date().getTime();
+		
+		var hit=false;	
+		
+		var dX = 0;
+		var dY = 0;
+		var bX = 0;
+		var bY = 0;
+		
+		var i=0;
+		var e=0;
+		var k=0;
+		var o=0;
+		var vects;
+		var numberOfBalls=balls.length;
+		
+		var indexesToLoop = new Array();
+		var diffX;
+		var diffY;
+		
+		for ( i=0; i < balls.length; i++){
+			
+			dX = balls[i].getDeltaX(currentTime-latestTime);
+			dY = balls[i].getDeltaY(currentTime-latestTime);
+			bX = balls[i].getX();
+			bY = balls[i].getY();
+			
+			balls[i].setPosition ({x: bX+dX, y: bY+dY});
+			// *** we handle paddle hit separately, because of non-trivial bounces
+			// first check if paddle is about to hit the ball, or vice versa
+			vects = objects[0].getVectors();
+			if(vects[0].getX() <= balls[i].getX()-balls[i].diameter &&
+				vects[0].getX() + vects[0].compX() >= balls[i].getX()+balls[i].diameter &&
+				balls[i].getY() + balls[i].diameter >= vects[0].getY() && 
+				balls[i].getY() + balls[i].diameter <= vects[0].getY() + vects[1].compY()/2){
+
+					balls[i].setY(balls[i].getY()  - 2*( Math.abs( vects[0].getY() - balls[i].diameter - balls[i].getY())));
+					// then check if we need to adjust balls direction
+					if(balls[i].getX() < vects[0].getX() + vects[0].compX()/4){
+						balls[i].setDirection(-165);
+					}else if(balls[i].getX() < vects[0].getX() + vects[0].compX()/2){
+						balls[i].setDirection(-135);
+					} else if(balls[i].getX() >= vects[0].getX() + vects[0].compX()/4*3){
+						balls[i].setDirection(-15);
+					} else if(balls[i].getX() > vects[0].getX() + vects[0].compX()/2){
+						balls[i].setDirection(-45);
+					}
+
+					balls[i].setY(vects[0].getY()-balls[i].diameter);
+				}
+				
+			
+			
+			
+			// *** End of Paddle part
+			for ( e=1; e < objects.length && balls.length == numberOfBalls ; e++){
+				if (objects[e].isActive()){
+					vects = objects[e].getVectors();
+					indexesToLoop=[];
+					if (balls[i].x_component > 0){
+						indexesToLoop.push(1);
+					}else if(balls[i].x_component < 0){
+						indexesToLoop.push(3);
+					}
+					
+					if (balls[i].y_component > 0){
+						indexesToLoop.push(0);
+					}else if(balls[i].y_component < 0){
+						indexesToLoop.push(2);		
+					}
+					
+					for (o = 0; o<indexesToLoop.length; o++){
+						k=indexesToLoop[o];
+						
+						if (vects[k].compX()!=0){
+							if (Math.abs(vects[k].getY() - balls[i].getY()) - balls[i].diameter <= 0 &&
+									(balls[i].getX() - vects[k].getX() + balls[i].diameter >= 0  &&
+									balls[i].getX() - balls[i].diameter - vects[k].getX()-vects[k].compX() <= 0)) {
+								if (balls[i].y_component > 0){
+									balls[i].setY(balls[i].getY()  - 2*( Math.abs( vects[k].getY() - balls[i].diameter - balls[i].getY())));
+								}else{
+									balls[i].setY(balls[i].getY()  + 2*( Math.abs( vects[k].getY() + balls[i].diameter - balls[i].getY())));
+								}
+								
+								balls[i].y_component=-balls[i].y_component;
+								objects[e].youBeenHit(k,i);
+							}
+						}else{
+							if (Math.abs(vects[k].getX() - balls[i].getX()) - balls[i].diameter <= 0 &&
+									balls[i].getY() - vects[k].getY() + balls[i].diameter >= 0  &&
+									balls[i].getY() - balls[i].diameter - vects[k].getY() - vects[k].compY() <= 0) {
+	
+								if (balls[i].x_component > 0){
+									balls[i].setX(balls[i].getX()  - 2*( Math.abs( vects[k].getX() - balls[i].diameter - balls[i].getX())));
+								}else{
+									balls[i].setX(balls[i].getX()  + 2*( Math.abs( vects[k].getX() + balls[i].diameter - balls[i].getX())));
+								}
+
+								balls[i].x_component=-balls[i].x_component;
+								objects[e].youBeenHit(k,i);
+							}
+						}
+					}
+				}
+			}
+			if(balls.length == numberOfBalls) balls[i].draw();
+		}
+		latestTime = currentTime;
+	}
+	
+	return {
+		initialize: initialize,
+		stopBall: stopBall
+	}
+})();
+
+
+
+var levels;
+function addLevels(data){
+	//levels = JSON.parse(data);
+	levels=JSON.parse(data['levels']);
+}
+var popup = new Group().addTo(stage).attr({ x: 200, y: 120});
+
+popup.on('click',function(){	
+	Arkanoid.logic.initialize();
+	(this).destroy();
 });
 
-var view = {
-    context: $("#gamearea")[0].getContext("2d"),
-    t: 0,
-    lastTime: (new Date).getTime(),
-    timing: function(){
-        var timeConsumed = (new Date).getTime() - startTime;
-        return timeConsumed;
-    },
+new Rect(0, 0, 200, 100, 10)
+  .fill(gradient.linear(0, ['red', 'yellow']))
+  .stroke('green', 2)
+  .addTo(popup);
 
-    render: function(){
-        view.context.clearRect(0,0,640,480);
-        view.context.fillStyle = "rgb(60,60,60)";
-        view.context.fillRect(0,0,640,480);
-        view.context.clearRect(21,21,598,450);
-        view.context.fillStyle = "rgb(0,230,0)";
-        
-        $.each(arkanoid.model.blocks.getBlocks(),function(i, block){
-            drawBlock(block, view.context);
-        });
-        
-        drawPad(view.context);
-        /*
-        arkanoid.model.balls.addBall(arkanoid.model.pad.getPosition(),422);
-        $.each(arkanoid.model.balls.getBalls(), function(i, ball){
-            //drawBall(ball,context);
-        });
-        */
-        b = arkanoid.model.balls.getBalls()[0];
-        
-        var time= view.timing();
-        var x_ = Math.round(b.getPositionX(time));
-        var y_ = Math.round(b.getPositionY(time));
-        console.log("Time: "+time + " x: "+ x_ + " - y: "+y_);
-        view.context.fillStyle = "rgb(0,0,0)";
-        view.context.fillRect(x_,y_,5,5);
-        
-    },
-    tick: function(){
-        //console.log(view.timing());
-        view.t++;
-        view.timing();
-        view.render();
-        if(view.t<15)
-            requestAnimFrame(view.tick);
-    }
-};
+new Text('Go!').attr({
+  textFillColor: 'white', fontFamily: 'Arial', fontSize: 60, x: 50, y: 30
+}).addTo(popup);
 
+/*
+* Object
+*/
 
-function drawBlock(block, context){
-    context.fillStyle = 'black';
-    context.fillRect(block.x,block.y,46,25);
-    context.fillStyle = block.color;
-    context.fillRect(block.x+1,block.y+1,44,23);               
-}
-function drawPad(context){
-    
-    var x = arkanoid.model.pad.getPosition();
-    var w = arkanoid.model.pad.getWidth();
-    x -= w/2;
-    context.fillStyle = 'grey';
-    context.fillRect(x,430,w,20);
-    context.fillStyle = 'black';
-    context.fillRect(x+2,432,w-4,16);
-    context.fillStyle = '#25383C';
-    context.fillRect(x+3,433,w-6,14);
+function HittableObject(item){
+	this.getVectors = function(){
+		return item.getVectors();
+	}
+	
+	this.youBeenHit = function(index, ballIndex){
+		// your vector index has been hit
+		item.pop(index, ballIndex);
+	}
+	
+	this.isActive = function(){
+		return item.isActive();
+	}	
 }
 
-function drawBall(ball, context){
-    context.fillStyle='black';
-    //console.log(ball.x+ ", " + ball.y);
-    context.beginPath();
-    context.arc(ball.x,ball.y,8,0,Math.PI*2, true);
-    context.closePath();
-    context.fill();
-    
+function Block(col_, row_, type_, color_){
+	var col = col_;
+	var row = row_;
+	var type = type_;
+	var color = color_;
+	var hits=0;
+	
+	var active = true;
+	
+	var x1 = (col-1) * defaults.colWidth;
+	var y1 = (row-1) * defaults.rowHeight;
+	var x2 = x1 + defaults.colWidth;
+	var y2 = y1 + defaults.rowHeight;
+	
+	var vectors = new Array();
+	
+	vectors.push(		new V(x1, y1, defaults.colWidth, 0));
+	vectors.push(		new V(x1, y1, 0, defaults.rowHeight));
+	vectors.push(		new V(x1, y2, defaults.colWidth, 0));
+	vectors.push(		new V(x2, y1, 0, defaults.rowHeight));
+	
+	this.object = new Rect(x1, y1, defaults.colWidth, defaults.rowHeight, 5).attr({
+        fillColor: color,
+        fillGradient: gradient.linear(0, ['rgba(0,0,0,.2)', 'rgba(0,0,0,0)'])
+      }).addTo(stage);
+	
+	this.pop = function(index, ballIndex){
+		hits++;
+		if (type == 1 ){
+			active=0;
+			this.object.destroy();
+		}
+	}
+	
+	this.isActive = function(){ return active; };
+	
+	this.getVectors = function(){
+	// return two horizontal vectors and two vertical
+		
+		return vectors;		
+	}
+	
 }
 
-function Block(x,y,color,bonus){
-    this.x=x;
-    this.y=y;
-    this.color=color;
-    this.bonus=bonus;
-    this.popped=false;
+/*
+* Ball
+*/
+
+function Ball(x,y, direction){
+	this.starting_x = x;
+  this.starting_y = y;
+	this.x = x;
+	this.y = y;
+
+	this.diameter = 10;
+	this.speed = 0;
+
+	this.timeSet = (new Date).getTime();
+	this.directionInRads = direction * Math.PI / 180;  // radians
+			
+	this.x_component = 0; // Math.cos(this.directionInRads) * this.speed;
+	this.y_component = 0; // Math.sin(this.directionInRads) * this.speed;
+
+	this.object = new Circle(this.x, this.y, this.diameter);
+
+// Getters
+
+	this.getDeltaX = function(time){ return this.x_component * (time); }
+	this.getDeltaY = function(time){ return this.y_component * (time); }
+
+	this.getX = function(time){ return this.x; }
+	this.getY = function(time){ return this.y; }
+
+// Getters
+	this.setBasePosition = function(position){
+		this.starting_x = position.x;
+		this.starting_y = position.y;
+	}
+	
+	this.setDirection = function(direction){
+		this.directionInRads = direction * Math.PI / 180;  // radians
+		this.x_component = Math.cos(this.directionInRads) * this.speed;
+		this.y_component = Math.sin(this.directionInRads) * this.speed;
+	}
+	this.setSpeed = function(speed, timeOfChange){
+		this.speed=speed;
+		
+		this.x_component = Math.cos(this.directionInRads) * this.speed;
+		this.y_component = Math.sin(this.directionInRads) * this.speed;
+	}
+	this.setPosition = function(position){
+		this.x = position.x;
+		this.y = position.y;
+	}
+	this.setX = function(position){
+		this.x = position
+	}
+	this.setY = function(position){
+		this.y = position
+	}
+	
+	this.draw = function(){
+		this.object.attr({x: this.x, y: this.y});
+	}
+}
+// end Ball
+
+
+/*
+*  Paddle
+*/
+
+
+function Paddle(){
+	this.y=defaults.height-50;
+	this.x=defaults.width/2-50;
+	this.width=100;
+	this.height = 20;
+	this.object = new Rect(this.x,this.y,this.width, this.height, 5).attr({
+        fillColor: '#0077FF',
+        fillGradient: gradient.linear(0, ['rgba(0,0,0,.2)', 'rgba(0,0,0,0)'])
+      }).addTo(stage);
+	  
+	var vectors = [new V(this.x, this.y, this.width, 0),
+									new V(this.x, this.y, 0, this.height),
+									new V(this.x, this.y+this.height, this.width, 0),
+									new V(this.x + this.width, this.y, 0, this.height)];
+	
+	this.pop = function(index, ballIndex){
+		
+	}
+	
+	this.changePosition = function(x){
+		this.x=x-this.width/2;
+		vectors = [new V(this.x, this.y, this.width, 0),
+									new V(this.x, this.y, 0, this.height),
+									new V(this.x, this.y+this.height, this.width, 0),
+									new V(this.x + this.width, this.y, 0, this.height)];
+		this.object.attr({x: this.x});
+	}
+	this.isActive = function(){ return true; };
+	
+	this.getVectors = function(){
+	// return two horizontal vectors and two vertical
+		return vectors;		
+	}
 }
 
-arkanoid.model={};
+function GameArea(){
+	var vectors = new Array();
+	vectors.push(		new V(0, defaults.height,defaults.width, 0));
+	vectors.push(		new V(defaults.width, 0, 0, defaults.height));
+	vectors.push(		new V(0, 0, defaults.width, 0));
+	vectors.push(		new V(0, 0, 0, defaults.height));
 
-arkanoid.model.blocks=(function(){
-    var blocks=new Array();
-    function addBlock(x,y,color,bonus){
-        var b=new Block(x,y,color,bonus,false);
-        blocks.push(b);
-    }
-    function getBlockCount(){
-        return blocks.length;
-    }
-    function getBlocks(){
-        return blocks;
-    }
-    
-    return {
-        getBlockCount: getBlockCount,
-        addBlock: addBlock,
-        getBlocks: getBlocks
-    }
-})();
+	this.pop = function(index, ballIndex){
+		if (index == 0){
+			// remove ball from the balls array
+			Arkanoid.logic.stopBall(ballIndex);
+		}
+	}
+	
+	this.isActive = function(){ return true; };
+	
+	this.getVectors = function(){
 
-arkanoid.model.pad = (function(){
-    var x = 300;
-    var width = 100;
-    var state = 0;
-    function getPosition(){
-        return x; 
-    }
-    function setPosition(diff){
-        x += diff; // TODO: might hit the wall
-    } 
-    function setState(s){
-        state = s;
-    }
-    function getWidth(){
-        if (state === 1)
-            return 150;
-        return 100;
-    }
-    
-    return {
-        getPosition: getPosition,
-        setPosition: setPosition,
-        setState: setState,
-        getWidth: getWidth
-    }
-})();
-
-function Ball(x,y){
-    this.x=x;
-    this.y=y;
-    this.speed=0.5;       //
-    this.timeSet=(new Date).getTime();
-    this.direction=-45*Math.PI/180;  // radians
-    
-    this.starting_x=x;
-    this.starting_y=y;
-}
-
-Ball.prototype.getPositionX = function(time){
-    //console.log(this.starting_x);
-    return Math.cos(this.direction)*time*this.speed+this.starting_x;
-}
-Ball.prototype.getPositionY = function(time){
-    return Math.sin(this.direction)*time*this.speed+this.starting_y;
+		return vectors;		
+	}
 }
 
 
-arkanoid.model.balls = (function(){
-    var balls = new Array();
-    
-    function addBall(x,y){
-        balls.push(new Ball(x,y));
-    }
-    function getBalls(){
-        return balls;
-    }
-    
-    return {
-        addBall: addBall,
-        getBalls: getBalls
-    }
-})();
+function V(x_, y_, x_component_, y_component_){
+	var x = x_;
+	var y = y_;
+	var x_component = x_component_;
+	var y_component = y_component_;
+
+	this.getX = function(){ return x; }
+	this.getY = function(){ return y; }
+	
+	this.compX = function(){ return x_component; }
+
+	this.compY = function(){ return y_component; }
+
+	this.subtract = function(vector){ 
+		return new V(x, y, x_component - vector.compX(), y_component - vector.compY());
+	}
+	this.add = function(vector){ 
+		return new V(x, y, x_component + vector.compX, y_component + vector.compY);
+	}
+
+	this.scalar = function(scalar){
+		return new V(x, y, x_component*scalar, y_component*scalar);
+	}
+
+	this.dotProduct = function(vector){
+		return vector.compX() * x_component + vector.compY() * y_component;
+	}
+	
+	this.doesDotProjectOnVector = function(x_2, y_2){
+		var v2 = this.projection(new V(x_2, y_2, x - x_2, y - y_2));
+
+		if(this.dotProduct(v2)>0)
+			return false;
+		if (v2.length() > this.length())
+			return false;
+		return true;
+	}
+	
+	this.distanceOfDot = function(x_2, y_2){		
+		v=v.subtract(this.projection(new V(x_2, y_2, x - x_2, y - y_2)));
+		return v.length();
+	}
+
+	this.projection = function(vector){
+		return this.scalar(vector.dotProduct(this) / this.dotProduct(this));
+	}
+	
+	this.length = function(){
+		return Math.sqrt(x_component*x_component+y_component*y_component);
+	}
+	
+	this.toString = function (){
+		return "( " + x + " : " + y + "  ) -> " + x_component + " + " + y_component;
+	}
+}

@@ -1,21 +1,88 @@
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
-<!DOCTYPE html>
-<html>
-    <head>
-        <title></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    </head>
-    <body>
-        <div id="arkanoid"></div>
-        <canvas id="gamearea" width="640" height="480" style="border:1px solid black;"></canvas>
-        <script src="scripts/jquery-1.8.2.min.js"></script>
-        <!--<script src="scripts/backbone-min.js"></script>
-        <script src="scripts/raphael-min.js"></script>-->
-        <script src="scripts/bonsai-0.4.1.min.js"></script>
-        
-        <script src="scripts/arkanoid.js"></script>
-    </body>
+<!DOCTYPE html> 
+<html lang="en"> 
+	<head> 
+		<meta charset="utf-8" /> 
+		<title>MyShite!</title>  
+		<link rel="stylesheet" href="style.css" type="text/css" />  
+	
+		<header> 
+			<!--<h1>MyShite</h1>  -->
+			<nav id="navigation">
+				<ul> 
+				<li>
+					<a href="#" class ="chosen" ><img src="img/onebit_01.png"/></a>
+				</li> 
+				<li>
+					<a href="#"><img src="img/onebit_18.png" /></a>
+				</li>  
+				<li>
+					<a href="#"><img src="img/onebit_13.png" /></a>
+				</li> 
+				<li>
+					<a href="#"><img src="img/onebit_42.png" /></a>
+				</li> 
+				</ul>
+			</nav>  
+		</header><!-- /#banner -->
+	</head>  
+	<body id="index" class="home"> 
+	
+		<!-- Mustache view -->
+		<section id="view">
+		</section>
+
+		
+		<!-- Mustache Templates -->
+		<script id = "article" type="text/html">
+			<!--<h1>{{title}}</h1>-->
+			<article>
+				<h2>{{title}}</h2>
+				{{#paragraphs}}
+					<p>{{{paragraph}}}</p>
+				{{/paragraphs}}
+			</article>
+		</script>
+		
+		<!-- Script files -->
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+		
+		<script type="text/javascript" src="scripts/mustache.js"></script>
+		<script type="text/javascript" src="scripts/bonsai-0.4.1.min.js"></script>
+		
+        <script type="text/javascript" src="koodi.js"></script>
+		<div id='movie' style ="display:none"></div>
+		<script>
+                    
+			// ToDo
+			// load levels from web service
+                        
+			var levels = '{"levels":[{"level": "1","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"2","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"6","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"13","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"3","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"1","color":"orange"},{"x":"13","y":"4","type":"1","color":"orange"}]}]}';
+			console.log(levels);
+			var movie = bonsai.run(
+			document.getElementById('movie'), 
+			{
+				code:function() {
+					var text = new Text().addTo(stage);
+					stage.on('message:levels', function(data){
+						addLevels(data);
+					});
+					stage.sendMessage('ready', {});
+				},
+				url: 'scripts/arkanoid.js',
+				width: 650, 
+				height: 480, 
+				framerate:60
+			});
+			
+			movie.on('load', function(){
+				movie.on('message:ready', function() {
+				  // send a categorized message to the runner context
+					movie.sendMessage('levels',{
+						levels: levels
+					})
+				});
+			});
+                        
+		</script>
+	</body> 
 </html>
