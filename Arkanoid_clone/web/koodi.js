@@ -9,9 +9,9 @@ var media = {"pages": [
 	"title":"About the Author",
 	"paragraphs":[
 		{"title":"Me",
-		"paragraph":"I do lift."},
+		"paragraph":"This is me."},
 		{"title":"",
-		"paragraph":"p2"}
+		"paragraph":"Then."}
 	]},
 	{"pagename":"stuff",
 	"title":"Files & Stuff",
@@ -21,7 +21,7 @@ var media = {"pages": [
 		{"title": "Links",
 		"paragraph":'<a href="https://github.com/enderi">GitHub</a>'},
 		{"title":"Arkanoid",
-		"paragraph":"Fancy a game of Arkanoid? <a href='#' id='arkanoid'>Yes, please</a>"}]},
+		"paragraph":"Fancy a game of Arkanoid? <a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please</a><div id ='movie'></div>"}]},
 	{"pagename":"contact",
 	"title":"Contact",
 	"paragraphs":[
@@ -62,8 +62,7 @@ var media = {"pages": [
 </script>
 */
 
-
-var activePage = 2;
+var activePage = 0;
 
 $(document).ready(function(){
 	changePage(activePage);
@@ -82,16 +81,12 @@ $(document).ready(function(){
 		});
 		e.preventDefault();
 	});
-        $("#arkanoid").click(function(){
-            $("#movie").css('display','');
-        });
+
 
 });
 
 function changePage(){
-	
 	var articleData = media['pages'][activePage];
-
 	var html = Mustache.render($("#article").html(), articleData);
 	$("#view").html(html);
 	
