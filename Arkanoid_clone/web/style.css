@@ -2,62 +2,41 @@ body {
 	background-color: #DDDDDD;
 }
 
-header {
-	
+header {	
 }
 
 header h1 {
     color: rgb(140, 40, 40);
-
 }
 
 header nav ul{
-
-	
-
 	width: 60%;
 	padding:0;
-	text-align: center;
-/*
-	background-color: #EDF2F2;
-    border:1px solid;
-	border-radius: 15px;
-    -moz-border-radius: 15px;
-    -webkit-border-radius: 15px;
-*/
+        padding-top:1em;
+	
 }
 header nav ul {
-	
 }
 header nav ul li a:hover{
 	opacity: 0.7;	
-
 }
 
-header nav ul li a{
-	opacity: .4;
-
-}
-
-
-.chosen img:hover { 
-}
-
-
-.chosen {
-	opacity: 1;
-	
-	//background-color: #EEEEEE;
-	border-radius: 15px;
-    -moz-border-radius: 15px;
-    -webkit-border-radius: 15px;
-
-}
 
 header nav ul li {
     display: inline; 
 }
 
+header nav ul li a {
+	padding: 2em 1.5em;
+        opacity: .4;
+}
+
+.chosen {
+    opacity: 1;
+}
+.chosen:hover {
+    opacity: 1;
+}
 article  {
 	width: 80%;
 	padding:1em 3em;
@@ -73,9 +52,7 @@ article  {
 
 }
 
-header nav ul li a {
-	padding: 2em 1.5em;
-}
+
 
 #movie {
 	background: #090909;
