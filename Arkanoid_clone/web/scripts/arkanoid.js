@@ -1,8 +1,5 @@
 /*
  *  Arkanoid clone
- *
- *
- *
  */
 
 var Arkanoid={};
@@ -16,13 +13,15 @@ Arkanoid = (function(){
         colWidth: stage.width / 13,
         rowHeight: stage.height / 20,
         ball: {
-            ballSpeed: 5
+            ballSpeed: 5,
+            radius: 10
         },
         paddle: {
             verticalPosition: stage.height-50,
             paddleSpeed: 7,
             left: "left",
             right: "right",
+            fire: "enter",
             paddleTypes: [
                 {
                     width: 100,
@@ -45,7 +44,6 @@ Arkanoid = (function(){
     
     // Constructor
     function Arkanoid(){
-        
         this.config = defaults;
         this.levels = JSON.parse(stage.options.levels);
         this.currentLevel = 1;
@@ -70,7 +68,7 @@ Arkanoid = (function(){
         var keys = {
             37: "left",
             39: "right",
-            32: "spacebar"
+            13: "enter"
         };
         
         var down = {};
@@ -97,15 +95,10 @@ Arkanoid = (function(){
 	this.width = 100;
 	this.height = 20;
         this.config = config;
-        
-	/*this.object= new Rect(this.x,this.y,this.width, this.height, 5).attr({
-            fillColor: '#0077FF',
-            fillGradient: gradient.linear(0, ['rgba(0,0,0,.2)', 'rgba(0,0,0,0)'])
-        }).addTo(stage);
-        */
 
 
         this.reCalculateVectors=function(){
+            
             this.vectors = [
                 new Arkanoid.V(this.x+this.width/4, this.y, -this.width/2, 0),
                 new Arkanoid.V(this.x+this.width/2, this.y+this.height/2, -this.width/4, -this.height/2),
@@ -121,10 +114,7 @@ Arkanoid = (function(){
         this.drawObject = function(){
             
             this.object = new Group().addTo(stage).attr({ x: this.x-this.width/2, y: this.y});
-            /*new Rect(0,0,this.width, this.height, 5).attr({
-                fillColor: '#0077FF',
-                fillGradient: gradient.linear(0, ['rgba(0,0,0,.2)', 'rgba(0,0,0,0)'])
-            }).addTo(this.object);            */
+      
             for (var i =0 ; i < this.vectors.length; i++){
 
                 new Path()
@@ -144,17 +134,13 @@ Arkanoid = (function(){
         this.drawObject();
         
 
-        for (var i=0; i<this.vectors.length; i++){
-//            vectorToStage(this.vectors[i].getNormalRH(),'orange');
-//            vectorToStage(this.vectors[i],'yellow');
-        }
         this.pop = function(index, ballIndex){
-            if (index == 0){
-                // remove ball from the balls array
-                
-                
-                //Arkanoid.logic.stopBall(ballIndex);
+            if (this.arkanoid.balls[ballIndex].stickiness && index ===0){
+                this.arkanoid.balls[ballIndex].speed=0;
+                this.arkanoid.balls[ballIndex].recalculate();
+                this.arkanoid.balls[ballIndex].isStuck=this;
             }
+
         }
 	
         this.isActive = function(){ return true; };
@@ -180,7 +166,7 @@ Arkanoid = (function(){
         this.x = x;
 	this.y = y;
 
-	this.radius = 10;
+	this.radius = config.radius;
         this.width = config.width;
 	this.speed = 0;
 
@@ -191,7 +177,11 @@ Arkanoid = (function(){
 	this.x_component = Math.cos(this.directionInRads)*this.speed;
 	this.y_component = Math.sin(this.directionInRads)*this.speed;
         
-        this.directionVector = new Arkanoid.V(this.x, this.y_, this.x_component_, this.y_component);
+        this.stickiness=true;
+        
+        this.isStuck = attachedPaddle;
+        
+        this.directionVector = new Arkanoid.V(this.x, this.y, this.x_component_, this.y_component);
         
         // these are calculated based on time difference and
         // are used to calculate collisions and bounces
@@ -219,8 +209,6 @@ Arkanoid = (function(){
         }
         this.getAngle = function(){
             return this.direction;
-            //if(this.x_component == 0) return 90;
-            //return Math.atan(this.y_component/this.x_component)*180/Math.PI;
         }
     }
 
@@ -291,8 +279,8 @@ Arkanoid = (function(){
         this.pop = function(index, ballIndex){
             if (index == 0){
                 // remove ball from the balls array
-                //this.arkanoid.balls[index].speed=0;
-                //this.arkanoid.balls[index].recalculate();
+                this.arkanoid.balls[index].speed=0;
+                this.arkanoid.balls[index].recalculate();
             }
         }
 	
@@ -310,13 +298,48 @@ Arkanoid = (function(){
         }
 	
         this.youBeenHit = function(index, ballIndex){
-            // your vector index has been hit
+            // your vector [index] has been hit
             item.pop(index, ballIndex);
         }
 	
         this.isActive = function(){
             return item.isActive();
-        }        
+        }
+        this.distanceFromBall = function(ball){
+            
+            var distanceOfCurrent;
+            var objectToHit;
+            var vectorThatBallHit;
+            var vectorOfCollision;
+            var bX = ball.x;
+            var bY = ball.y;
+            
+            var dX = ball.dX;
+            var dY = ball.dY;
+            
+            var first=true;
+            
+            var vects = this.arkanoid.objects[e].item.vectors;
+            for (var k = 0; k<vects.length; k++){
+                distanceOfCurrent = vects[k].shortestDistanceFromPoint(bX+dX, bY+dY).length();
+
+                if (first || closestToHit > distanceOfCurrent){
+                    closestToHit = distanceOfCurrent;
+                    objectToHit=this.item;
+                    vectorIndexToHit = k;
+                    vectorThatBallHit = vects[k];
+                    vectorOfCollision = vects[k].shortestDistanceFromPoint(bX+dX, bY+dY);
+                    first =false;
+                }
+            }
+            
+            return {
+                closestToHit : closestToHit,
+                vectorIndexToHit: k,
+                vectorOfCollision: vectorOfCollision
+            }
+
+        }
     }
     
     tools.mixin( Arkanoid.prototype, {
@@ -337,12 +360,13 @@ Arkanoid = (function(){
             
             var ball;
             for (var i = 0 ; i<1; i++){
-                ball= new Ball(150,250+i*50,-70, defaults.ball, paddle, this);
+
+                ball= new Ball(paddle.x, paddle.y-defaults.ball.radius,-45, defaults.ball, paddle, this);
                 ball.object.addTo(stage);
                 ball.draw();
-                ball.setSpeed(5);
+                //ball.setSpeed(5);
                 this.balls.push(ball);
-                
+                ball.isStuck = this.paddle;
                 ball.object.on('click', function(){
                     console.log(ball.speed + " "+ ball.direction);
                     //stage.freeze();
@@ -368,21 +392,8 @@ Arkanoid = (function(){
             var h;
             for(i = 0; i< this.blocks.length; i++){
                 this.objects.push(new HittableObject(this.blocks[i]));
-                /*
-                vectors = this.blocks[i].getVectors();
-                
-                for (h = 0 ; h<vectors.length; h++){
-                    vectorToStage(vectors[h].getNormalRH().normalize().scalar(10), 'orange');
-                }
-                */
             }
-
             
-
-            stage.on('pointermove', function(e){
-                if(e.target !== stage) return;
-                paddle.x = e.stageX;
-            });
         },
         draw: function() {
             this.currentTime = new Date().getTime();
@@ -402,14 +413,43 @@ Arkanoid = (function(){
     tools.mixin(Paddle.prototype, {
         draw: function(){
             var arkanoid = this.arkanoid;
-            
+            var dX=0;
             if(Arkanoid.keyIsDown(this.config.left) && this.x > 0){
-                this.x -= arkanoid.paddleSpeed;
+                dX = -arkanoid.paddleSpeed;
             }
             if(Arkanoid.keyIsDown(this.config.right) && this.x < arkanoid.width){
-                this.x += arkanoid.paddleSpeed;
+                dX = arkanoid.paddleSpeed;
             }
-            this.setLocation(this.x, this.y);
+            if(Arkanoid.keyIsDown(this.config.fire) && this.arkanoid.balls[0].isStuck === this){
+                this.arkanoid.balls[0].isStuck=null;
+                this.arkanoid.balls[0].speed = 5;
+                this.arkanoid.balls[0].recalculate();
+            }
+            
+            if(dX !== 0 ) {
+                if(this.arkanoid.balls[0].isStuck){
+                   
+                    if(this.arkanoid.balls[0].x-this.arkanoid.balls[0].radius+dX<0){
+                        dX = 0-(this.arkanoid.balls[0].x-this.arkanoid.balls[0].radius);
+                    }
+                    if(this.arkanoid.balls[0].x+this.arkanoid.balls[0].radius+dX>this.arkanoid.config.width){
+                        dX = this.arkanoid.config.width - this.arkanoid.balls[0].x - this.arkanoid.balls[0].radius;
+                    }
+                    
+                    this.x += dX;
+                    
+                    this.setLocation(this.x, this.y);
+                    this.arkanoid.balls[0].x+=dX;
+                    this.arkanoid.balls[0].recalculate();
+                    return
+                }
+                    
+                if(this.arkanoid.balls[0].distanceFromObject(this,dX, 0).closestToHit>this.arkanoid.balls[0].radius){
+                    this.x += dX;
+                    this.setLocation(this.x, this.y);
+                    return;
+                }
+            }
         }
     });    
 
@@ -418,6 +458,45 @@ Arkanoid = (function(){
             this.dX = this.x_component * dTime/20;
             this.dY = this.y_component * dTime/20;
         },
+        distanceFromObject: function(object, dXO, dYO){
+            var closestToHit;
+            var objectToHit;
+            var vectorThatBallHit;
+            var vectorOfCollision;
+            var vectorIndexToHit;
+            var distanceOfCurrent;
+            var e
+            var first = true;
+            var bX = this.x;
+            var bY = this.y;
+            var dX = this.dX;
+            var dY = this.dY;
+            
+            
+            var offsetVector = new Arkanoid.V(0,0,dXO, dYO);
+            vects = object.getVectors();
+                        
+            for (var k = 0; k<vects.length; k++){
+
+                distanceOfCurrent = vects[k].add(offsetVector).shortestDistanceFromPoint(bX+dX, bY+dY).length();
+                
+                if (first || closestToHit > distanceOfCurrent){
+                    closestToHit = distanceOfCurrent;
+                    objectToHit=this.arkanoid.objects[e];
+                    vectorIndexToHit = k;
+                    vectorThatBallHit = vects[k];
+                    vectorOfCollision = vects[k].shortestDistanceFromPoint(bX+dX, bY+dY);
+                    first =false;
+                }
+            }
+            
+            return {
+                closestToHit: closestToHit,
+                vectorIndexToHit: vectorIndexToHit,
+                vectorOfCollision: vectorOfCollision
+            }
+            
+        },
         checkCollisions: function(){
             var dX;
             var dY;
@@ -425,6 +504,7 @@ Arkanoid = (function(){
             var bY;
             var bSpeed;
             var bRadius;
+            var distance;
             var closestToHit;
             var distanceOfCurrent;
             var objectToHit;
@@ -448,11 +528,11 @@ Arkanoid = (function(){
                 vectorOfCollision=null;
                 angleOfNormal = null;
                 
+                
 
                 for ( e=0; e < this.arkanoid.objects.length; e++){
                     if (this.arkanoid.objects[e].isActive() && bSpeed !== 0){
                         vects = this.arkanoid.objects[e].item.vectors;
-                        
                         for (k = 0; k<vects.length; k++){
                             distanceOfCurrent = vects[k].shortestDistanceFromPoint(bX+dX, bY+dY).length();
 
@@ -462,21 +542,20 @@ Arkanoid = (function(){
                                 vectorIndexToHit = k;
                                 vectorThatBallHit = vects[k];
                                 vectorOfCollision = vects[k].shortestDistanceFromPoint(bX+dX, bY+dY);
-                                //console.log(vectorOfCollision.toString());
-                                //angleOfNormal = 360-Math.round(vectorOfCollision.getAngle());
                                 first =false;
                             }
                         }
+                        
                     }
                 }
                 if (!first && closestToHit <= this.arkanoid.balls[i].radius){
                            
-                    //var normalOfCollision=vectorOfCollision.getNormalRH();
+                    
                     var collXComp = vectorOfCollision.getNormalRH().projection(this.arkanoid.balls[i].directionVector);
                     var collYComp = vectorOfCollision.projection(this.arkanoid.balls[i].directionVector);
                     var newDirection = collXComp.add(collYComp.scalar(-1));
                     this.arkanoid.balls[i].direction=newDirection.getAngle();
-                   
+                    
                     this.arkanoid.balls[i].dX=0;
                     this.arkanoid.balls[i].dY=0;
                     this.arkanoid.balls[i].recalculate();
@@ -505,7 +584,7 @@ Arkanoid = (function(){
 
     Arkanoid.items = function(){
     }
-
+    
 // Two-dimensional vector class 
 
 Arkanoid.V = function(x_, y_, x_component_, y_component_){
@@ -695,10 +774,10 @@ vectorToStage(v1, 'red');
         (this).destroy();
     });
 
-    new Rect(0, 0, 200, 100, 10)    
+/*    new Rect(0, 0, 200, 100, 10)    
     .stroke('green', 2)
     .addTo(popup);
-
+*/
     new Text('Go!').attr({
         textFillColor: 'white', fontFamily: 'Arial', fontSize: 60, x: 50, y: 30
     }).addTo(popup);
