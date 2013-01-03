@@ -1,55 +1,56 @@
 <!DOCTYPE html> 
-<html lang="en"> 
-	<head> 
-		<meta charset="utf-8" /> 
-		<title>MyShite!</title>  
-		<link rel="stylesheet" href="style.css" type="text/css" />  
-	
-		<div id ="header"> 
-                    <h1><strong>My Shite!</strong></h1>
-			<div id="navigation">
-				<ul> 
-				<li>
-					<a href="#" class ="chosen" ><img src="img/onebit_01.png"/></a>
-				</li> 
-				<li>
-					<a href="#"><img src="img/onebit_18.png" /></a>
-				</li>  
-				<li>
-					<a href="#"><img src="img/onebit_13.png" /></a>
-				</li> 
-				<li>
-					<a href="#"><img src="img/onebit_42.png" /></a>
-				</li> 
-				</ul>
-			</div>  
-                </div>
-	</head>  
-	<body id="index" class="home"> 
-		<!-- Mustache view -->
-		<section id="view">
-		</section>
+<html lang="en">
+    <head> 
+            <meta charset="utf-8" /> 
+            <title>MyShite!</title>  
+            <link rel="stylesheet" href="style.css" type="text/css" />  
 
-		
-		<!-- Mustache Templates -->
-		<script id = "article" type="text/html">
-			<!--<h1>{{title}}</h1>-->
-			<article>
-				<h2>{{title}}</h2>
-				{{#paragraphs}}
-					<p>{{{paragraph}}}</p>
-				{{/paragraphs}}
-			</article>
-		</script>
-		
-		<!-- Script files -->
-		<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
-		
-		<script type="text/javascript" src="scripts/mustache.js"></script>
-		<script type="text/javascript" src="scripts/bonsai-0.4.1.min.js"></script>
-		
-                <script type="text/javascript" src="koodi.js"></script>
-                <script type="text/javascript" src="arkanoid_runner.js"></script>
+    </head>  
+    <body id="index" class="home"> 
+        <div id ="header"> 
+            <h1><strong>My Shite!</strong></h1>
+                <div id="navigation">
+                        <ul> 
+                        <li>
+                                <a href="#" class ="chosen" ><img src="img/onebit_01.png"/></a>
+                        </li> 
+                        <li>
+                                <a href="#"><img src="img/onebit_18.png" /></a>
+                        </li>  
+                        <li>
+                                <a href="#"><img src="img/onebit_13.png" /></a>
+                        </li> 
+                        <li>
+                                <a href="#"><img src="img/onebit_42.png" /></a>
+                        </li> 
+                        </ul>
+                </div>  
+        </div>
+
+        <!-- Mustache view -->
+        <section id="view">
+        </section>
+
+
+        <!-- Mustache Templates -->
+        <script id = "article" type="text/html">
+                <!--<h1>{{title}}</h1>-->
+                <article>
+                        <h2>{{title}}</h2>
+                        {{#paragraphs}}
+                                <p>{{{paragraph}}}</p>
+                        {{/paragraphs}}
+                </article>
+        </script>
+
+        <!-- Script files -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+
+        <script type="text/javascript" src="scripts/mustache.js"></script>
+        <script type="text/javascript" src="scripts/bonsai-0.4.1.min.js"></script>
+
+        <script type="text/javascript" src="koodi.js"></script>
+        <script type="text/javascript" src="arkanoid_runner.js"></script>
                 
     </body> 
 </html>

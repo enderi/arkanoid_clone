@@ -75,9 +75,9 @@ $(document).ready(function(){
 		//console.log(activePage);
 		$(".chosen").removeClass('chosen');
 		$(this).attr("class","chosen");		
-		$("#view").fadeOut('moderate', function(){
+		$("#view").fadeOut('fast', function(){
 			changePage();
-			$("#view").fadeIn('moderate');
+			$("#view").fadeIn('fast');
 		});
 		e.preventDefault();
 	});
