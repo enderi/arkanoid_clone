@@ -62,7 +62,7 @@ var media = {"pages": [
 </script>
 */
 
-var activePage = 0;
+var activePage = 2;
 
 $(document).ready(function(){
 	changePage(activePage);

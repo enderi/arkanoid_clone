@@ -124,10 +124,7 @@ Arkanoid = (function(){
                     .closePath()
                     .addTo(this.object);
             }
-            // draw normals of the paddle
-            /*for (h = 0 ; h<this.vectors.length; h++){
-                    vectorToStage(this.vectors[h].getNormalRH().normalize().scalar(10), 'orange');
-                }*/
+
             this.object.attr({fillColor: '#0077FF'});
         }
         
@@ -273,9 +270,7 @@ Arkanoid = (function(){
 
         this.arkanoid = arkanoid;
         this.config=config;
-        for (var i = 0 ; i<this.vectors.length; i++){
-           // vectorToStage(this.vectors[i].getNormalRH().normalize().scalar(10), 'red');
-        }
+
         this.pop = function(index, ballIndex){
             if (index == 0){
                 // remove ball from the balls array
@@ -367,10 +362,6 @@ Arkanoid = (function(){
                 //ball.setSpeed(5);
                 this.balls.push(ball);
                 ball.isStuck = this.paddle;
-                ball.object.on('click', function(){
-                    console.log(ball.speed + " "+ ball.direction);
-                    //stage.freeze();
-                });
             }
             var blocksJSON = this.levels['levels'][this.currentLevel-1]['blocks'];
             
@@ -402,7 +393,9 @@ Arkanoid = (function(){
             for (var i = 0; i < this.balls.length; i++){
                 
                 ball = this.balls[i];
-                ball.countDiffs(this.currentTime - this.latestTime);
+                //console.log(this.currentTime - this.latestTime);
+                // lets use 16ms because more realistic way causes a few problems
+                ball.countDiffs(10 /*this.currentTime - this.latestTime*/);
                 ball.checkCollisions();
                 ball.draw();
             }
@@ -582,10 +575,8 @@ Arkanoid = (function(){
         return Arkanoid;
     })();
 
-    Arkanoid.items = function(){
-    }
     
-// Two-dimensional vector class 
+// Two-dimensional vector (with starting point) class
 
 Arkanoid.V = function(x_, y_, x_component_, y_component_){
     var x = x_;
@@ -751,22 +742,9 @@ function pointToLineDistance( v2, px,py){
     return v2.distanceOfDot(px,py);
 }
 
+    new Arkanoid().initialize();
 
     /*
-function addLevels(data){
-	//levels = JSON.parse(data);
-	levels=JSON.parse(data['levels']);
-}
-
-
-*/
-/*
-var v1 = new Arkanoid.V(100,100, 20, -10);
-console.log(v1.getAngle());
-vectorToStage(v1, 'red');
-*/
-
-
     var popup = new Group().addTo(stage).attr({ x: 200, y: 120});
 
     popup.on('click',function(){	
@@ -774,10 +752,7 @@ vectorToStage(v1, 'red');
         (this).destroy();
     });
 
-/*    new Rect(0, 0, 200, 100, 10)    
-    .stroke('green', 2)
-    .addTo(popup);
-*/
     new Text('Go!').attr({
         textFillColor: 'white', fontFamily: 'Arial', fontSize: 60, x: 50, y: 30
     }).addTo(popup);
+    */
