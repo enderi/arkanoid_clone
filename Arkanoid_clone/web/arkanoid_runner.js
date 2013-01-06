@@ -84,7 +84,7 @@ Arkanoid.Menu = (function(space){
         }
         colorItems();
         
-        arkanoidMenu.text(widthToUse/2, heightToUse/2 * (3+2) / (menuItems.length +3),"TOP").attr({'fill':'red', 'font-size':'20em'});
+        //arkanoidMenu.text(widthToUse/2, heightToUse/2 * (3+2) / (menuItems.length +3),"TOP").attr({'fill':'red', 'font-size':'20em'});
         requestAnimFrame(Arkanoid.Menu.tick);
     }
     
@@ -117,16 +117,16 @@ Arkanoid.Menu = (function(space){
     }
 
     function fireApp(){
-
+		
         if(selectedItem === 1){
             arkanoidMenu.remove();
             isActive=false;
             $(document).unbind('keydown');
-            $(document).unbind('keyup');
+			$(document).unbind('keyup');
             return;
         }
         if(selectedItem === 0){
-            //arkanoidMenu.remove();
+            arkanoidMenu.clear();
             launchGame(arkanoidMenu);
         }
     }

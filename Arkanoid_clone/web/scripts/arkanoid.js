@@ -138,12 +138,7 @@ arkanoid.model.Game = function(view){
         });            
 
     }
-    
-    // make calculated positions as new positions
-    function approveChanges(){
-        paddle.x += dx;
-    }
-    
+   
     // direction is -1, 0 or 1 depending on direction to move
     this.suggestPaddleMove=function(direction){
         paddle.setMovement(direction);
@@ -158,11 +153,13 @@ arkanoid.model.Game = function(view){
             }
         }
     }
-
+	
+	// Called by controller
     this.enterPressed = function(){
         paddle.enterPressed();
     }
     
+	
     function checkCollisions(ball){
         if(ball.x + ball.dX + ball.radius >= view.width){
             ball.direction = 180- ball.direction;
@@ -204,6 +201,7 @@ arkanoid.model.Game = function(view){
             ball.recalculate();
             ball.setMovement();
             
+			// tell paddle that it has been hit
             paddle.ballHitYou(ball, closest.vectorIndexToHit);
             // if ball hit the paddle, then it won't hit blocks, so we return
             return;
@@ -217,12 +215,14 @@ arkanoid.model.Game = function(view){
         
     }
     
-    
+    /*
     function closestObjectFromPoint(objectArray, x, y){
         for (var i=0; i<objectArray.length; i++){
         }
     }
-    
+    */
+	// Calculates minimum distance between object and (point + delta)
+	// Returns punch of stuff
     function distanceFromPointToObject(object, x, y, dX, dY){
         var closestToHit;
         var vectorThatBallHit;
@@ -273,12 +273,9 @@ arkanoid.model.Block = function(column, row, color, type){
     this.vectors.push(new arkanoid.model.V(this.x, this.y+this.height, this.width, 0));
     this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y+this.height, 0, -this.height));
     
-    /*
-    this.object = gameArea.rect(this.x, this.y, this.width, this.height, 5).attr({
-        fill: this.color
-    });*/
-    
+	
     this.pop = function(index, ballIndex){
+		// ball has hit you, dissappear
         this.active=false;
         // TODO: tell view to remove object
     }
@@ -398,23 +395,21 @@ arkanoid.model.Ball = function(x,y,color){
         this.directionVector.setCompY(this.y_component);
     }
     
+	// model first defines deltas, then calculates if there is collisions 
+	// and after that calls this.countNewposition to reposition the ball
     this.setMovement = function(){
-
         this.dX = this.x_component;
         this.dY = this.y_component;
     }
     this.recalculate();
     
     this.countNewPosition = function(){
-        
         if(this.dX || this.dX){
-            
             this.x = this.x + this.dX;
             this.y = this.y + this.dY;
             this.dX = 0;
             this.dY = 0;
         }
-        
     }
 }
 
@@ -449,6 +444,8 @@ arkanoid.controller.Gamecontroller = function(model){
     
 }
 
+
+// Tracking keys
 arkanoid.controller.Gamecontroller.keyIsDown = (function(){
     var keys = {
         37: "left",

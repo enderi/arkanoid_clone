@@ -21,7 +21,7 @@ var media = {"pages": [
 		{"title": "Links",
 		"paragraph":'<a href="https://github.com/enderi">GitHub</a>'},
 		{"title":"Arkanoid",
-		"paragraph":"Fancy a game of Arkanoid? <a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please</a><div id ='movie'></div>"}]},
+		"paragraph":"Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle? <a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please</a><div id ='movie'></div>"}]},
 	{"pagename":"contact",
 	"title":"Contact",
 	"paragraphs":[
