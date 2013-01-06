@@ -30,39 +30,8 @@ var media = {"pages": [
 	]}
 ]};
 
-/*
-<div id='movie'></div>
-<script>
-	var movie = bonsai.run(document.getElementById('movie'), 
-	{	
-		code:function() {
-			stage.on('message:externalData', function(data){
-				console.log(data);
-			});
-			stage.on('message', function(data){
-				console.log(data);
-			});
-		},
-		url: 'scripts/arkanoid.js',
-		width: 640, 
-		height: 480, 
-		framerate:60
-	});
-	
-	movie.on('load', function(){
-		movie.on('message.ready', function(){
-			movie.sendMessage('externalData', {
-				nodeData: document.getElementById('movie').innerHTML
-			});
-			movie.sendMessage({
-				bonsai: "tree"
-			});
-		});
-	});
-</script>
-*/
 
-var activePage = 2;
+var activePage = 0;
 
 $(document).ready(function(){
 	changePage(activePage);
