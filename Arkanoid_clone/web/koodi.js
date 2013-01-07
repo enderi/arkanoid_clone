@@ -2,7 +2,7 @@ var media = {"pages": [
 	{"pagename":"home",
 	"title":"Home",
 	"paragraphs":[
-		{"title":"Welcome to MyShite",
+		{"title":"Welcome to MySite",
 		"paragraph":"This is my site."}
 	]},
 	{"pagename":"me",
@@ -26,7 +26,7 @@ var media = {"pages": [
 	"title":"Contact",
 	"paragraphs":[
 		{"title":"Contact information",
-		"paragraph":"My email is jannejvento@gmail.com"}
+		"paragraph":"My email is jannejvento (at) gmail.com"}
 	]}
 ]};
 
