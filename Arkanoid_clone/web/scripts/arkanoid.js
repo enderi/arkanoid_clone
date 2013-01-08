@@ -7,6 +7,7 @@ var arkanoid = {};
 
 arkanoid.view = {};
 arkanoid.view.Gameview = function(gameArea){
+	this.gameArea = gameArea;
     this.width = gameArea.width;
     this.height = gameArea.height;
    
@@ -42,7 +43,11 @@ arkanoid.view.Gameview = function(gameArea){
         drawBlocks(gameSituation.blocks);
     }
 
-    function drawPaddle(paddle){
+	this.drawVector = function(vector, color){
+		vectorToStage(vector, color, this.gameArea);
+	}
+
+	function drawPaddle(paddle){
         paddleObject = new gameArea.set();
         var vectors = paddle.vectors;
         for (var i=0; i < vectors.length; i++){
@@ -74,6 +79,14 @@ arkanoid.model = {};
 arkanoid.model.Game = function(view){
     var balls = new Array();
     var blocks = new Array();
+	
+	var columnWidth = view.gameArea.width / 13;
+	var rowHeight = view.gameArea.height / 20;
+	
+	var blocksByColumnsAndRows = new Array(); //[column][row]
+	for(var q =0; q < 13;q++){
+		blocksByColumnsAndRows.push(new Array(20));
+	}
     var paddle = null;
     var gameArea = null;
     
@@ -83,7 +96,7 @@ arkanoid.model.Game = function(view){
     
     this.start = function(){
         balls.push(new arkanoid.model.Ball(view.width/2,Math.floor(view.height*6/7-11),'white'));
-        balls.push(new arkanoid.model.Ball(view.width/2+50,Math.floor(view.height*6/7-5),'white'));
+        balls.push(new arkanoid.model.Ball(view.width/2-50,Math.floor(view.height-13),'white'));
         balls.push(new arkanoid.model.Ball(view.width/2+70,Math.floor(view.height*6/7-5),'white'));
         balls.push(new arkanoid.model.Ball(view.width/2+90,Math.floor(view.height*6/7-5),'white'));
         
@@ -98,12 +111,18 @@ arkanoid.model.Game = function(view){
         paddle.ballThatsStuckOnPaddle = balls[0];
         
         var blocksJSON = levels['levels'][currentLevel-1]['blocks'];
-        
-        for(var i = 0; i < blocksJSON.length; i++){
-            blocks.push(new arkanoid.model.Block(blocksJSON[i]['x'], 
+        var block;
+		var i;
+		var j;
+		var vects;
+        for(i = 0; i < blocksJSON.length; i+=3){
+			block = new arkanoid.model.Block(blocksJSON[i]['x'], 
             blocksJSON[i]['y'],
             blocksJSON[i]['color'],
-            blocksJSON[i]['type']));
+            blocksJSON[i]['type'],
+			columnWidth, rowHeight);
+			blocks.push(block);
+			blocksByColumnsAndRows[blocksJSON[i]['x']-1][blocksJSON[i]['y']-1] = block;
         }
         
         view.init({
@@ -124,10 +143,9 @@ arkanoid.model.Game = function(view){
         for(var i = 0; i< balls.length; i++){
             if (balls[i].speed !==0){
                 balls[i].setMovement();
+				//console.log(balls[i].dX);
                 checkCollisions(balls[i]);
             }
-            
-            
             balls[i].countNewPosition();
         }
         
@@ -145,7 +163,7 @@ arkanoid.model.Game = function(view){
         for (var i = 0; i<balls.length; i++){
             if(paddle.ballThatsStuckOnPaddle == balls[i]){
                 balls[i].dX = paddle.dX;
-            }else if(distanceFromPointToObject(paddle, balls[i].x, balls[i].y, paddle.dX, 0).closestToHit <= balls[i].radius){
+            }else if(distanceFromPointToObject(paddle, balls[i].x, balls[i].y, -paddle.dX, 0).closestToHit <= balls[i].radius){
                 paddle.setMovement(0);
                 try{
                     paddle.ballThatsStuckOnPaddle.dX = 0; // only one ball can be stuck at time
@@ -188,14 +206,13 @@ arkanoid.model.Game = function(view){
         var distn;
         var closest;
         closest = distanceFromPointToObject(paddle, ball.x, ball.y, paddle.dX, 0);
-
+		
         if (closest.closestToHit <= ball.radius){
             var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
             var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
             var newDirection = collXComp.add(collYComp.scalar(-1));
             
             ball.direction=newDirection.getAngle();
-
             ball.dX=0;
             ball.dY=0;
             ball.recalculate();
@@ -208,19 +225,58 @@ arkanoid.model.Game = function(view){
         }
         
         // check Block collisions
-        for (i =0; i<blocks.length;i++){
-            
-        }
-        
+		// to speed things up, we first find out in which column and row ball is now
+		// and then we only look for collisions with blocks around that cell
+		// we assume that method works, so in current cell, there is not active block
+		var col = Math.floor(ball.x / columnWidth)+1;
+		var row = Math.floor(ball.y / rowHeight)+1;
+		var closeBlocks = new Array();
+		var i;
+		var j;
+		for(i=col-2;i<=col;i++){
+			for (j=row-2; j<=row;j++){
+				if(i>=0 && i < blocksByColumnsAndRows.length
+				&& j>=0 && j < blocksByColumnsAndRows[i].length){
+					if(blocksByColumnsAndRows[i][j])
+						closeBlocks.push(blocksByColumnsAndRows[i][j]);
+				}
+			}
+		}
+		
+	
+		closest = null;
+		var currentObject = null;
+		var chosenBlock=null;
+		for(i = 0; i< closeBlocks.length; i++){
+			currentObject = distanceFromPointToObject(closeBlocks[i], ball.x, ball.y, ball.dX, ball.dY);
+			if(!closest){
+				closest = currentObject;
+				chosenBlock = closeBlocks[i];
+			}else if(closest.closestToHit > currentObject.closestToHit){
+				closest = currentObject;
+				chosenBlock = closeBlocks[i];
+			}
+
+		}
+		
+		if (closest && closest.closestToHit <= ball.radius){
+
+			var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
+			var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
+			var newDirection = collXComp.add(collYComp.scalar(-1));
+			
+			ball.direction=newDirection.getAngle();
+			
+			ball.dX=0;
+			ball.dY=0;
+			ball.recalculate();
+			ball.setMovement();
+			chosenBlock.pop(closest.vectorIndexToHit, ball);
+			return;
+		}		
         
     }
-    
-    /*
-    function closestObjectFromPoint(objectArray, x, y){
-        for (var i=0; i<objectArray.length; i++){
-        }
-    }
-    */
+  
 	// Calculates minimum distance between object and (point + delta)
 	// Returns punch of stuff
     function distanceFromPointToObject(object, x, y, dX, dY){
@@ -231,15 +287,15 @@ arkanoid.model.Game = function(view){
         var distanceOfCurrent;
         var e;
         var first = true;
-        //var offsetVector = new arkanoid.model.V(0,0,dX,dY);
+        
         vects = object.getVectors();
         
         for (var k = 0; k<vects.length; k++){
-            distanceOfCurrent = vects[k].shortestDistanceFromPoint(x-dX, y-dY).length();
+            distanceOfCurrent = vects[k].shortestDistanceFromPoint(x+dX, y+dY).length();
             if (first || closestToHit > distanceOfCurrent){
                 closestToHit = distanceOfCurrent;
                 vectorIndexToHit = k;
-                vectorThatBallHit = vects[k];
+                //vectorThatBallHit = vects[k];
                 vectorOfCollision = vects[k].shortestDistanceFromPoint(x, y);
                 first =false;
             }
@@ -257,11 +313,16 @@ arkanoid.model.Game = function(view){
 }
 
 // Objects
-arkanoid.model.Block = function(column, row, color, type){
+arkanoid.model.Block = function(column, row, color, type, columnWidth, rowHeight){
 
     this.column = column;
     this.row = row;
-    
+    this.width = columnWidth;
+	this.height = rowHeight;
+	
+	this.x = (this.column-1) * this.width;
+	this.y = (this.row-1) * this.height;
+	
     this.active=true;
 
     this.color = color;
@@ -387,6 +448,19 @@ arkanoid.model.Ball = function(x,y,color){
         this.direction = this.direction % 360;
         while(this.direction<0)
             this.direction +=360;
+		// if direction is almost parallel, we adjust it
+		if(this.direction <25){
+			this.direction++;
+		}else if(this.direction > 155 && this.direction <=180){
+			this.direction--;
+		}else if (this.direction >180 && this.direction < 205){
+			this.direction++;
+		}else if(this.direction >335){
+			this.direction--;
+		}			
+			
+		
+			
         this.directionInRads = this.direction * Math.PI / 180;  // radians
 
         this.x_component = Math.cos(this.directionInRads)*this.speed;
