@@ -99,26 +99,25 @@ arkanoid.model.Game = function(view){
     
     this.start = function(){
         balls.push(new arkanoid.model.Ball(view.width/2,Math.floor(view.height*6/7-11),'white'));
-<<<<<<< HEAD
+/*
+		<<<<<<< HEAD
         balls.push(new arkanoid.model.Ball(view.width/2-50,Math.floor(view.height-13),'white'));
-=======
-<<<<<<< HEAD
-        /*
+=======*/
+
+
         balls.push(new arkanoid.model.Ball(view.width/2+50,Math.floor(view.height*6/7-5),'white'));
-=======
+
         balls.push(new arkanoid.model.Ball(view.width/2-50,Math.floor(view.height-13),'white'));
->>>>>>> Hittable blocks
->>>>>>> origin/master
         balls.push(new arkanoid.model.Ball(view.width/2+70,Math.floor(view.height*6/7-5),'white'));
         balls.push(new arkanoid.model.Ball(view.width/2+90,Math.floor(view.height*6/7-5),'white'));
-        /*
+       
         balls[1].speed = 5;
         balls[1].recalculate();
         balls[2].speed = 5;
         balls[2].recalculate();
         balls[3].speed = 5;
         balls[3].recalculate();
-        */
+       
         paddle = new arkanoid.model.Paddle(view.width/2, Math.floor(view.height*6/7));
         paddle.ballThatsStuckOnPaddle = balls[0];
         
@@ -132,20 +131,9 @@ arkanoid.model.Game = function(view){
             blocksJSON[i]['y'],
             blocksJSON[i]['color'],
             blocksJSON[i]['type'],
-<<<<<<< HEAD
 			columnWidth, rowHeight);
 			blocks.push(block);
 			blocksByColumnsAndRows[blocksJSON[i]['x']-1][blocksJSON[i]['y']-1] = block;
-=======
-<<<<<<< HEAD
-            this.columnWidth,
-            this.rowHeight));
-=======
-			columnWidth, rowHeight);
-			blocks.push(block);
-			blocksByColumnsAndRows[blocksJSON[i]['x']-1][blocksJSON[i]['y']-1] = block;
->>>>>>> Hittable blocks
->>>>>>> origin/master
         }
         
         view.init({
@@ -230,15 +218,7 @@ arkanoid.model.Game = function(view){
         var distn;
         var closest;
         closest = distanceFromPointToObject(paddle, ball.x, ball.y, paddle.dX, 0);
-<<<<<<< HEAD
 		
-=======
-<<<<<<< HEAD
-        
-=======
-		
->>>>>>> Hittable blocks
->>>>>>> origin/master
         if (closest.closestToHit <= ball.radius){
             var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
             var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
@@ -256,43 +236,6 @@ arkanoid.model.Game = function(view){
             return;
         }
         
-        // check Block collisions
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-/*  
-        var closestBlock = null;
-        var distanceOfCurrentBlock;
-        
-        for (i =0; i<blocks.length;i++){
-            distanceOfCurrentBlock = distanceFromPointToObject(blocks[i], ball.x, ball.y, ball.dX, ball.dY);
-            
-            if(!closestBlock){
-                closestBlock = distanceOfCurrentBlock;
-            }else if(distanceOfCurrentBlock.closestToHit < closestBlock.closestToHit){
-                closestBlock = distanceOfCurrentBlock;
-            }
-        }
-        
-        if(closestBlock.closestToHit <= ball.radius){
-            collXComp = closestBlock.vectorOfCollision.getNormalRH().projection(ball.directionVector);
-            collYComp = closestBlock.vectorOfCollision.projection(ball.directionVector);
-            newDirection = collXComp.add(collYComp.scalar(-1));
-            console.log(newDirection.getAngle());
-            //ball.speed=0;
-            
-            ball.direction=newDirection.getAngle();
-            
-            ball.dX=0;
-            ball.dY=0;
-            ball.recalculate();
-            //ball.setMovement();
-            
-        }*/
-    }
-    
-=======
->>>>>>> origin/master
 		// to speed things up, we first find out in which column and row ball is now
 		// and then we only look for collisions with blocks around that cell
 		// we assume that method works, so in current cell, there is not active block
@@ -344,11 +287,7 @@ arkanoid.model.Game = function(view){
 		}		
         
     }
-  
-<<<<<<< HEAD
-=======
->>>>>>> Hittable blocks
->>>>>>> origin/master
+
 	// Calculates minimum distance between object and (point + delta)
 	// Returns punch of stuff
     function distanceFromPointToObject(object, x, y, dX, dY){
@@ -363,17 +302,8 @@ arkanoid.model.Game = function(view){
         vects = object.getVectors();
         
         for (var k = 0; k<vects.length; k++){
-<<<<<<< HEAD
-            distanceOfCurrent = vects[k].shortestDistanceFromPoint(x+dX, y+dY).length();
-=======
-<<<<<<< HEAD
-            //console.log("t:" + vects[k].toString());
             distanceOfCurrent = vects[k].shortestDistanceFromPoint(x-dX, y-dY).length();
-            
-=======
-            distanceOfCurrent = vects[k].shortestDistanceFromPoint(x+dX, y+dY).length();
->>>>>>> Hittable blocks
->>>>>>> origin/master
+   
             if (first || closestToHit > distanceOfCurrent){
                 closestToHit = distanceOfCurrent;
                 vectorIndexToHit = k;
@@ -396,34 +326,23 @@ arkanoid.model.Block = function(column, row, color, type, columnWidth, rowHeight
 
     this.column = column;
     this.row = row;
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-    this.x = this.column * columnWidth;
-    this.y = this.row * rowHeight;
-    
-=======
->>>>>>> origin/master
+
     this.width = columnWidth;
 	this.height = rowHeight;
 	
 	this.x = (this.column-1) * this.width;
 	this.y = (this.row-1) * this.height;
-	
-<<<<<<< HEAD
-=======
->>>>>>> Hittable blocks
->>>>>>> origin/master
+
     this.active=true;
 
     this.color = color;
     this.type = type;
     
     this.vectors = new Array();
-    this.vectors.push(new arkanoid.model.V(this.x+columnWidth, this.y, - columnWidth, 0));
-    this.vectors.push(new arkanoid.model.V(this.x, this.y, 0, rowHeight));
-    this.vectors.push(new arkanoid.model.V(this.x, this.y+rowHeight, columnWidth, 0));
-    this.vectors.push(new arkanoid.model.V(this.x+columnWidth, this.y+rowHeight, 0, -rowHeight));
+    this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y, - this.height, 0));
+    this.vectors.push(new arkanoid.model.V(this.x, this.y, 0, this.height));
+    this.vectors.push(new arkanoid.model.V(this.x, this.y+this.height, this.width, 0));
+    this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y+this.height, 0, -this.height));
 	
     this.pop = function(index, ballIndex){
 	// ball has hit you, dissappear
@@ -538,18 +457,9 @@ arkanoid.model.Ball = function(x,y,color){
         this.direction = this.direction % 360;
         while(this.direction<0)
             this.direction +=360;
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-        
-        // even though 'realistic' collisions is nice, we can't allow balls to move
-        // to e.g direction = 2 because it gets quite boring to wait
-        // ball to reach top of the screen
-        // so we adjust a bit when these angles occur
-        // TODO
-        
-=======
->>>>>>> origin/master
+
+
+
 		// if direction is almost parallel, we adjust it
 		if(this.direction <25){
 			this.direction++;
@@ -560,13 +470,8 @@ arkanoid.model.Ball = function(x,y,color){
 		}else if(this.direction >335){
 			this.direction--;
 		}			
-			
-		
-			
-<<<<<<< HEAD
-=======
->>>>>>> Hittable blocks
->>>>>>> origin/master
+
+
         this.directionInRads = this.direction * Math.PI / 180;  // radians
 
         this.x_component = Math.cos(this.directionInRads)*this.speed;
