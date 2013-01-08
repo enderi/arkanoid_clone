@@ -21,7 +21,7 @@ var media = {"pages": [
 		{"title": "Links",
 		"paragraph":'<a href="https://github.com/enderi">GitHub</a>'},
 		{"title":"Arkanoid",
-		"paragraph":"Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle (use enter to begin & laung and arrows to move the paddle)?<br/> <a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please</a><div id ='movie'></div>"}]},
+		"paragraph":"Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle? <br/>(use enter to begin & laung and arrows to move the paddle)<br/> <a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please</a><div id ='movie'></div>"}]},
 	{"pagename":"contact",
 	"title":"Contact",
 	"paragraphs":[

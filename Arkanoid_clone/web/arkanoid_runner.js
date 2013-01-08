@@ -66,7 +66,7 @@ Arkanoid.Menu = (function(space){
     var keyDown = {};
     var isActive;
     var node;
-    
+    var enterPressed=false;
     this.lastStroke;
     
     function initialize(nodeToRunOn){
@@ -75,12 +75,14 @@ Arkanoid.Menu = (function(space){
         node=nodeToRunOn;
         isActive=true;
         element = document.getElementById("movie");
-        arkanoidMenu = Raphael(nodeToRunOn,widthToUse, heightToUse);
+        arkanoidMenu = Raphael(nodeToRunOn, widthToUse, heightToUse);
         
         menuObjects = [];
         selectedItem = 0;
         for (var i = 0; i< menuItems.length; i++){
-            menuObjects.push(arkanoidMenu.text(widthToUse/2, heightToUse/2 * (i+2) / (menuItems.length +3),menuItems[i]).attr({'fill': 'white', 'font-size':'40em'}));
+            menuObjects.push(arkanoidMenu.text(widthToUse/2, 
+            			heightToUse/2 * (i+2) / (menuItems.length +3),
+            			menuItems[i]).attr({'fill': 'white', 'font-size':'40em'}));
         }
         colorItems();
         
@@ -89,10 +91,14 @@ Arkanoid.Menu = (function(space){
     }
     
     function reactOnKey(){
-        
-        if(Arkanoid.keyIsDown('enter')){
+        if(!Arkanoid.keyIsDown('enter') && enterPressed){
+        	enterPressed=false;
             fireApp();
             return false;
+        }
+        
+        if(Arkanoid.keyIsDown('enter')){
+        	enterPressed=true;
         }
         
         if(Arkanoid.keyIsDown('up')){
@@ -113,7 +119,7 @@ Arkanoid.Menu = (function(space){
                 color = 'white';
             }
             menuObjects[i].attr({'fill': color});
-            }
+        }
     }
 
     function fireApp(){
