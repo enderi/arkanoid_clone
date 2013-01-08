@@ -99,25 +99,21 @@ arkanoid.model.Game = function(view){
     
     this.start = function(){
         balls.push(new arkanoid.model.Ball(view.width/2,Math.floor(view.height*6/7-11),'white'));
-/*
-		<<<<<<< HEAD
-        balls.push(new arkanoid.model.Ball(view.width/2-50,Math.floor(view.height-13),'white'));
-=======*/
 
-
+ 
         balls.push(new arkanoid.model.Ball(view.width/2+50,Math.floor(view.height*6/7-5),'white'));
 
         balls.push(new arkanoid.model.Ball(view.width/2-50,Math.floor(view.height-13),'white'));
+
         balls.push(new arkanoid.model.Ball(view.width/2+70,Math.floor(view.height*6/7-5),'white'));
-        balls.push(new arkanoid.model.Ball(view.width/2+90,Math.floor(view.height*6/7-5),'white'));
-       
+     
         balls[1].speed = 5;
         balls[1].recalculate();
         balls[2].speed = 5;
         balls[2].recalculate();
         balls[3].speed = 5;
         balls[3].recalculate();
-       
+      
         paddle = new arkanoid.model.Paddle(view.width/2, Math.floor(view.height*6/7));
         paddle.ballThatsStuckOnPaddle = balls[0];
         
@@ -134,6 +130,7 @@ arkanoid.model.Game = function(view){
 			columnWidth, rowHeight);
 			blocks.push(block);
 			blocksByColumnsAndRows[blocksJSON[i]['x']-1][blocksJSON[i]['y']-1] = block;
+
         }
         
         view.init({
@@ -218,7 +215,7 @@ arkanoid.model.Game = function(view){
         var distn;
         var closest;
         closest = distanceFromPointToObject(paddle, ball.x, ball.y, paddle.dX, 0);
-		
+
         if (closest.closestToHit <= ball.radius){
             var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
             var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
@@ -236,7 +233,7 @@ arkanoid.model.Game = function(view){
             return;
         }
         
-		// to speed things up, we first find out in which column and row ball is now
+        		// to speed things up, we first find out in which column and row ball is now
 		// and then we only look for collisions with blocks around that cell
 		// we assume that method works, so in current cell, there is not active block
 		var col = Math.floor(ball.x / columnWidth)+1;
@@ -287,6 +284,7 @@ arkanoid.model.Game = function(view){
 		}		
         
     }
+  
 
 	// Calculates minimum distance between object and (point + delta)
 	// Returns punch of stuff
@@ -302,12 +300,13 @@ arkanoid.model.Game = function(view){
         vects = object.getVectors();
         
         for (var k = 0; k<vects.length; k++){
+
             distanceOfCurrent = vects[k].shortestDistanceFromPoint(x-dX, y-dY).length();
-   
+			distanceOfCurrent = vects[k].shortestDistanceFromPoint(x+dX, y+dY).length();
+
             if (first || closestToHit > distanceOfCurrent){
                 closestToHit = distanceOfCurrent;
                 vectorIndexToHit = k;
-                //vectorThatBallHit = vects[k];
                 vectorOfCollision = vects[k].shortestDistanceFromPoint(x, y);
                 first =false;
             }
@@ -332,14 +331,14 @@ arkanoid.model.Block = function(column, row, color, type, columnWidth, rowHeight
 	
 	this.x = (this.column-1) * this.width;
 	this.y = (this.row-1) * this.height;
-
+	
     this.active=true;
 
     this.color = color;
     this.type = type;
     
     this.vectors = new Array();
-    this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y, - this.height, 0));
+    this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y, - this.width, 0));
     this.vectors.push(new arkanoid.model.V(this.x, this.y, 0, this.height));
     this.vectors.push(new arkanoid.model.V(this.x, this.y+this.height, this.width, 0));
     this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y+this.height, 0, -this.height));
@@ -457,9 +456,8 @@ arkanoid.model.Ball = function(x,y,color){
         this.direction = this.direction % 360;
         while(this.direction<0)
             this.direction +=360;
-
-
-
+       
+              
 		// if direction is almost parallel, we adjust it
 		if(this.direction <25){
 			this.direction++;
@@ -470,8 +468,8 @@ arkanoid.model.Ball = function(x,y,color){
 		}else if(this.direction >335){
 			this.direction--;
 		}			
-
-
+			
+		
         this.directionInRads = this.direction * Math.PI / 180;  // radians
 
         this.x_component = Math.cos(this.directionInRads)*this.speed;
