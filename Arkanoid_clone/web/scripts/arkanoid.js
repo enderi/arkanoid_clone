@@ -8,14 +8,14 @@ var arkanoid = {};
 arkanoid.view = {};
 arkanoid.view.Gameview = function(gameArea){
 	this.gameArea = gameArea;
-    this.width = gameArea.width;
-    this.height = gameArea.height;
+	this.width = gameArea.width;
+	this.height = gameArea.height;
     
-    this.levelInfo;
-   	var levelInfoTextbox;
+	this.levelInfo;
+	var levelInfoTextbox;
 
-    this.blocksLeft;
-   	var blocksLeftTextbox;
+	this.blocksLeft;
+	var blocksLeftTextbox;
 
 	this.ballsLeft;
 	var ballLeftTextbox;
@@ -137,7 +137,7 @@ arkanoid.model.Game = function(view){
     this.columnWidth = view.width / 13;
     this.rowHeight = view.height / 20;
     
-    var currentLevel=2;
+    var currentLevel=1;
 	var blocksLeft;
 	var ballsLeft;
 	
