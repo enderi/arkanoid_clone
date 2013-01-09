@@ -8,7 +8,7 @@ var media = {"pages": [
 	{"pagename":"me",
 	"title":"About the Author",
 	"paragraphs":[
-		{"title":"Me",
+		{"title":"",
 		"paragraph":"This is <a href='https://plus.google.com/101500422968632355934'>me</a>."},
 		{"title":"",
 		"paragraph":"Then."}
@@ -16,12 +16,12 @@ var media = {"pages": [
 	{"pagename":"stuff",
 	"title":"Files & Stuff",
 	"paragraphs":[
-		{"title":"Files & Stuff",
+		{"title":"Now, what is this?",
 		"paragraph":"Here you might find something to download."},
 		{"title": "Links",
-		"paragraph":'<a href="https://github.com/enderi">GitHub</a>'},
-		{"title":"Arkanoid",
-		"paragraph":"Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle? <br/>(use enter to begin & launch and arrows to move the paddle)<br/> <a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please</a><div id ='movie'></div>"}]},
+		"paragraph":'<a href="https://github.com/enderi">GitHub</a><br/><a href="http://jjvento.users.cs.helsinki.fi">Project time management system (School project) </a>'},
+		{"title":"Arkanoid(ish)",
+		"paragraph":"Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle? <br/><a href='#' id='arkanoid' onClick='runArkanoid($(\"#movie\"));'>Yes, please!</a><br/>(Use enter to begin & launch and arrows to move the paddle. You may also want to use Chrome.)<br/><div id ='movie'></div>"}]},
 	{"pagename":"contact",
 	"title":"Contact",
 	"paragraphs":[
