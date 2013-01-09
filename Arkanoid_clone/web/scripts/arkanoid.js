@@ -12,9 +12,13 @@ arkanoid.view.Gameview = function(gameArea){
     this.height = gameArea.height;
     
     this.levelInfo;
+   	var levelInfoTextbox;
+
     this.blocksLeft;
    	var blocksLeftTextbox;
-   	var levelInfoTextbox;
+
+	this.ballsLeft;
+	var ballLeftTextbox;
    	
     /*
      * Gamearea is divided to 13 columns and 20 rows
@@ -33,6 +37,10 @@ arkanoid.view.Gameview = function(gameArea){
 			this.height -20, 
 			"").attr("fill","#f1f1f1");    
 
+	ballsLeftTextbox = gameArea.text(this.width-40, 
+			this.height -20, 
+			"").attr("fill","#f1f1f1");
+			
     this.drawSituation = function(gameSituation){
         var vectors;
         var i;
@@ -75,6 +83,7 @@ arkanoid.view.Gameview = function(gameArea){
 	this.updateTexts = function(){
 		levelInfoTextbox.attr({text: "Level " + this.levelInfo});
 		blocksLeftTextbox.attr({text: this.blocksLeft + " blocks left"});
+		ballsLeftTextbox.attr({text: this.ballsLeft + " balls left"});
 	}
 	
 	function drawPaddle(paddle){
@@ -106,8 +115,6 @@ arkanoid.view.Gameview = function(gameArea){
     function vectorToStage(vector, color, paper){
         return paper.path('M'+vector.getX()+","+vector.getY()+"L"+(vector.getX()+vector.compX())+","+(vector.getY()+vector.compY())).attr({stroke: color});
     }
-    
-
 }
 
 // Model
@@ -132,6 +139,7 @@ arkanoid.model.Game = function(view){
     
     var currentLevel=2;
 	var blocksLeft;
+	var ballsLeft;
 	
     
     var levels = JSON.parse('{"levels":[{"level":"1","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"2","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"6","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"13","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"3","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"1","color":"orange"},{"x":"13","y":"4","type":"1","color":"orange"}]},{"level":"2","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"2","color":"yellow"},{"x":"13","y":"4","type":"3","color":"gray"}]}]}');
@@ -156,8 +164,9 @@ arkanoid.model.Game = function(view){
 
        }
         blocksLeft = blocksJSON.length;
+        ballsLeft = 3;
         view.levelInfo = currentLevel;
-        
+        view.ballsLeft = ballsLeft;
         view.init({
             blocks: blocks,
             balls: balls,
@@ -170,10 +179,12 @@ arkanoid.model.Game = function(view){
     	if (blocksLeft == 0 ){
     		console.log("done");
     	}
-    	if(balls.length == 0){		
+    	if(balls.length == 0 && ballsLeft > 0){		
     	    balls.push(new arkanoid.model.Ball(paddle.x,Math.floor(paddle.y -11),'white'));    	    
     	    paddle.ballThatsStuckOnPaddle = balls[0];
-    	    
+    	    ballsLeft --;
+    	    view.ballsLeft--;
+    	    view.updateTexts();
     	    view.init({
 				blocks: null,
 				balls: balls,
