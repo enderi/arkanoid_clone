@@ -3,9 +3,10 @@
  */
 
 // View
-var arkanoid = {};
+var arkanoid = arkanoid || {};
 
-arkanoid.view = {};
+arkanoid.view = arkanoid.view || {};
+
 arkanoid.view.Gameview = function(gameArea){
 	this.gameArea = gameArea;
 	this.width = gameArea.width;
@@ -18,7 +19,7 @@ arkanoid.view.Gameview = function(gameArea){
 	var blocksLeftTextbox;
 
 	this.ballsLeft;
-	var ballLeftTextbox;
+	var ballsLeftTextbox;
    	
     /*
      * Gamearea is divided to 13 columns and 20 rows
@@ -30,16 +31,6 @@ arkanoid.view.Gameview = function(gameArea){
     var ballObjectArray = new Array();
     var blockObjectArray = new Array();
     var paddleObject;
-	levelInfoTextbox = gameArea.text(20,this.height - 20,
-			"").attr("fill","#f1f1f1");
-	
-	blocksLeftTextbox = gameArea.text(this.width/2, 
-			this.height -20, 
-			"").attr("fill","#f1f1f1");    
-
-	ballsLeftTextbox = gameArea.text(this.width-40, 
-			this.height -20, 
-			"").attr("fill","#f1f1f1");
 			
     this.drawSituation = function(gameSituation){
         var vectors;
@@ -52,20 +43,41 @@ arkanoid.view.Gameview = function(gameArea){
         }
         
         // redraw paddle
-        paddleObject.remove();
+        if(paddleObject)
+	        paddleObject.remove();
         drawPaddle(gameSituation.paddle);
         
     }
     this.init = function(gameSituation){
-    	if(gameSituation.balls) drawBalls(gameSituation.balls);
-    	if(gameSituation.paddle) drawPaddle(gameSituation.paddle);
+    	if(gameSituation.balls){ 
+    		drawBalls(gameSituation.balls);
+    		ballsLeftTextbox = gameArea.text(this.width-40, 
+				this.height -20, 
+				"").attr("fill","#f1f1f1");
+    	}
+    	if(gameSituation.paddle){ 
+    		drawPaddle(gameSituation.paddle);
+    	}
     	if(gameSituation.blocks){
     		drawBlocks(gameSituation.blocks);
-    		this.blocksLeft = gameSituation.blocks.length;
+    		blocksLeftTextbox = gameArea.text(this.width/2, 
+					this.height -20, 
+					"").attr("fill","#f1f1f1");
     	}
-
+		
+		levelInfoTextbox = gameArea.text(20,this.height - 20,
+				"").attr("fill","#f1f1f1");
     }
+    
+	this.clearObjects = function(){
+		ballObjectArray = new Array();
+		blockObjectArray = new Array();
+		paddleObject = {};
 
+		this.gameArea.clear();
+		
+	}
+	
 	this.drawVector = function(vector, color){
 		vectorToStage(vector, color, this.gameArea);
 	}
@@ -86,6 +98,11 @@ arkanoid.view.Gameview = function(gameArea){
 		ballsLeftTextbox.attr({text: this.ballsLeft + " balls left"});
 	}
 	
+	this.addBall = function(ball){
+		ballObjectArray.push(gameArea.circle(ball.x,
+			ball.y, ball.radius).attr({fill: 'white'}));
+	}
+	
 	function drawPaddle(paddle){
         paddleObject = new gameArea.set();
         var vectors = paddle.vectors;
@@ -95,7 +112,7 @@ arkanoid.view.Gameview = function(gameArea){
     }
     
     function drawBalls(balls){
-        for (var i=0; i < balls.length; i++){            
+        for (var i=0; i < balls.length; i++){
             ballObjectArray.push(gameArea.circle(balls[i].x, 
             	balls[i].y, 
             	balls[i].radius).attr({fill: 'white'}));
@@ -118,9 +135,12 @@ arkanoid.view.Gameview = function(gameArea){
 }
 
 // Model
-arkanoid.model = {};
+arkanoid.model = arkanoid.model || {};
 
 arkanoid.model.Game = function(view){
+	var thisModel = this;
+	
+	
     var balls = new Array();
     var blocks = new Array();
 
@@ -138,35 +158,51 @@ arkanoid.model.Game = function(view){
     this.rowHeight = view.height / 20;
     
     var currentLevel=1;
-	var blocksLeft;
+	var blocksLeft=0;
 	var ballsLeft;
 	
+	this.gameIsActive;
     
-    var levels = JSON.parse('{"levels":[{"level":"1","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"2","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"6","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"13","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"3","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"1","color":"orange"},{"x":"13","y":"4","type":"1","color":"orange"}]},{"level":"2","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"2","color":"yellow"},{"x":"13","y":"4","type":"3","color":"gray"}]}]}');
+    var levels = JSON.parse('{"levels":[{"level":"1","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"2","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"6","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"13","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"3","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"1","color":"orange"},{"x":"13","y":"4","type":"1","color":"orange"}]},{"level":"2","background":"","blocks":[{"x":"3","y":"6","type":"3","color":"gray"},{"x":"4","y":"6","type":"3","color":"gray"},{"x":"5","y":"6","type":"3","color":"gray"},{"x":"6","y":"6","type":"3","color":"gray"},{"x":"7","y":"6","type":"3","color":"gray"},{"x":"8","y":"6","type":"3","color":"gray"},{"x":"9","y":"6","type":"3","color":"gray"},{"x":"10","y":"6","type":"3","color":"gray"},{"x":"11","y":"6","type":"3","color":"gray"},{"x":"12","y":"6","type":"3","color":"gray"},{"x":"13","y":"6","type":"3","color":"gray"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"2","color":"yellow"},{"x":"8","y":"4","type":"2","color":"yellow"}]}]}');
     
+    var maxLevelCount = levels['levels'].length;
+
     this.start = function(){
-     
         paddle = new arkanoid.model.Paddle(view.width/2, Math.floor(view.height*6/7));
-        
-        var blocksJSON = levels['levels'][currentLevel-1]['blocks'];
+        ballsLeft = 3;
+        initLevel(currentLevel);
+
+        this.gameIsActive=true;
+    }
+    
+    function initLevel(levelNo){
+    	if(levelNo > maxLevelCount){
+    		return;
+    	}
+    	currentLevel = levelNo;
+    	
+    	var blocksJSON = levels['levels'][currentLevel-1]['blocks'];
+
         var block;
 		var i;
 		var j;
 		var vects;
         for(i = 0; i < blocksJSON.length; i++){
-			block = new arkanoid.model.Block(blocksJSON[i]['x'], 
-            blocksJSON[i]['y'],
-            blocksJSON[i]['color'],
-            blocksJSON[i]['type'],
-			columnWidth, rowHeight, i);
+			block = new arkanoid.model.Block(
+				blocksJSON[i]['x'], blocksJSON[i]['y'],
+				blocksJSON[i]['color'], blocksJSON[i]['type'],
+				columnWidth, rowHeight, i);
 			blocks.push(block);
+			if(block.type != 3)
+				blocksLeft++;
 			blocksByColumnsAndRows[blocksJSON[i]['x']-1][blocksJSON[i]['y']-1] = block;
 
        }
-        blocksLeft = blocksJSON.length;
-        ballsLeft = 3;
+
         view.levelInfo = currentLevel;
         view.ballsLeft = ballsLeft;
+        view.blocksLeft = blocksLeft;
+
         view.init({
             blocks: blocks,
             balls: balls,
@@ -176,8 +212,14 @@ arkanoid.model.Game = function(view){
     }
     
     this.doATick = function(){
+
     	if (blocksLeft == 0 ){
-    		console.log("done");
+    		levelCompleted();
+    		return;
+    	}
+    	if (balls.length == 0 && ballsLeft == 0){
+    		this.endGame();
+    		return;
     	}
     	if(balls.length == 0 && ballsLeft > 0){		
     	    balls.push(new arkanoid.model.Ball(paddle.x,Math.floor(paddle.y -11),'white'));    	    
@@ -185,11 +227,12 @@ arkanoid.model.Game = function(view){
     	    ballsLeft --;
     	    view.ballsLeft--;
     	    view.updateTexts();
-    	    view.init({
+    	    view.addBall(balls[0]);
+			/*view.init({
 				blocks: null,
 				balls: balls,
 				paddle: null
-			});
+			});*/
     	}
     
         // move paddle
@@ -202,7 +245,6 @@ arkanoid.model.Game = function(view){
         for(var i = 0; i< balls.length; i++){
             if (balls[i].speed !==0){
                 balls[i].setMovement();
-				//console.log(balls[i].dX);
                 checkCollisions(balls[i]);
             }
             balls[i].countNewPosition();
@@ -211,10 +253,8 @@ arkanoid.model.Game = function(view){
 
         for ( i = balls.length-1; i>=0; i--){
         	if (!balls[i].active){
-        		view.removeBall(i);
-				balls.splice(i,1);
-        	}
-        		
+        		removeBall(i);
+        	}	
         }
         
         view.drawSituation({
@@ -255,6 +295,39 @@ arkanoid.model.Game = function(view){
         paddle.enterPressed();
     }
     
+    function removeBall(index){
+		view.removeBall(index);
+		balls.splice(index,1);
+    }
+    
+	this.endGame = function(){
+        this.gameIsActive=false;
+	}
+	
+	function endLevel(){
+	}
+	
+	function levelCompleted(){
+		var i;
+		for(i=0; i<balls.length; i++){
+			removeBall(i);
+			ballsLeft++; // you can keep all the balls you have active
+		}
+		view.clearObjects();
+		balls = new Array();
+		blocks = new Array();
+		blocksByColumnsAndRows = new Array(); //[column][row]
+		for(var q =0; q < 13;q++){
+			blocksByColumnsAndRows.push(new Array(20));
+		}
+		if(currentLevel < maxLevelCount){
+			currentLevel++;
+			initLevel(currentLevel);
+		}else{
+			thisModel.endGame();
+			return;
+		}
+	}
 	
     function checkCollisions(ball){
         if(ball.x + ball.dX + ball.radius >= view.width){
@@ -338,7 +411,6 @@ arkanoid.model.Game = function(view){
 		}
 		
 		if (closest && closest.closestToHit <= ball.radius){
-//			console.log(ball.speed);
 			var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
 			var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
 			var newDirection = collXComp.add(collYComp.scalar(-1));
@@ -395,190 +467,6 @@ arkanoid.model.Game = function(view){
     }
 }
 
-// Objects
-arkanoid.model.Block = function(column, row, color, type, columnWidth, rowHeight, index){
-	this.index = index;
-
-    this.column = column;
-    this.row = row;
-
-    this.width = columnWidth;
-	this.height = rowHeight;
-	
-	this.x = (this.column-1) * this.width;
-	this.y = (this.row-1) * this.height;
-	
-    this.active=true;
-
-    this.color = color;
-    this.type = type;
-    this.hits = 0;
-    
-    this.vectors = new Array();
-    this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y, - this.width, 0));
-    this.vectors.push(new arkanoid.model.V(this.x, this.y, 0, this.height));
-    this.vectors.push(new arkanoid.model.V(this.x, this.y+this.height, this.width, 0));
-    this.vectors.push(new arkanoid.model.V(this.x+this.width, this.y+this.height, 0, -this.height));
-	
-    this.pop = function(index, ballIndex){
-		// ball has hit you, do something
-		this.hits++;
-		if(this.type == 1)
-			this.active=false;
-		if(this.type == 2 && this.hits == 2)
-	        this.active=false;
-    }
-
-    this.isActive = function(){ return this.active; };
-
-    this.getVectors = function(){
-        return this.vectors;		
-    }
-}
-
-arkanoid.model.Paddle = function(x,y){
-    this.paddleSpeed=7;
-    
-    this.direction = 0;
-    
-    this.dX=0;
-    
-    this.y = y;
-    this.x = x;
-    this.width = 100;
-    this.height = 20;
-    
-    this.ballThatsStuckOnPaddle=null;
-    this.vectors=null;
-    
-    this.sticky = false;
-    
-    this.reCalculateVectors = function(){
-        this.vectors = [
-            new arkanoid.model.V(this.x + this.width/4, this.y, -this.width/2, 0),
-            new arkanoid.model.V(this.x + this.width/2, this.y+this.height/2, -this.width/4, -this.height/2),
-            new arkanoid.model.V(this.x - this.width/2, this.y+this.height/2, 0, this.height/2),
-            new arkanoid.model.V(this.x - this.width/4, this.y, -this.width/4, this.height/2),
-            new arkanoid.model.V(this.x - this.width/2, this.y+this.height, this.width, 0),
-            new arkanoid.model.V(this.x + this.width/2, this.y+this.height, 0, -this.height/2)];
-    }
-
-    this.enterPressed = function(){
-        if(this.ballThatsStuckOnPaddle){
-            this.ballThatsStuckOnPaddle.speed=5;
-            this.ballThatsStuckOnPaddle.recalculate();
-            this.ballThatsStuckOnPaddle = null;
-        }
-        
-    }
-    
-    this.ballHitYou = function(ball, vectorIndex){
-        if(this.ballThatsStuckOnPaddle || !this.sticky){
-            return;
-        }
-        if(vectorIndex===0){
-            ball.speed=0;
-            ball.recalculate();
-            this.ballThatsStuckOnPaddle = ball;
-        }
-            
-    }
-    
-    this.setMovement=function(direction){
-        this.dX = direction * this.paddleSpeed;
-        this.direction=direction;
-    }
-    
-    this.reCalculateVectors();
-    
-    this.countNewPosition = function(){
-        if(this.dX){
-            this.x = this.x + this.dX;
-            this.dX = 0;
-            this.reCalculateVectors();
-        }
-        
-    }
-    
-    /*
-     * Ball hit you, whatcha gonna do?
-     */
-    this.pop = function(index, ballIndex){
-        if (Arkanoid.balls[ballIndex].stickiness && index ===0){
-
-        }
-
-    }
-    
-    /*
-     * 
-     */
-    this.isActive = function(){ return true; };
-
-    this.getVectors = function(){
-        return this.vectors;		
-    }
-}
-
-arkanoid.model.Ball = function(x,y,color){
-    this.dX=0;
-    this.dY=0;
-    this.x = x;
-    this.y = y;
-    this.radius = 10;
-    this.isStuckOnPaddle;
-    
-    this.speed = 0;
-    this.direction = -45;
-    this.directionVector = new arkanoid.model.V(0,0,0,0);
-    
-    this.active = true;
-    
-    this.recalculate = function(){
-        this.direction = this.direction % 360;
-        while(this.direction<0)
-            this.direction +=360;
-       
-              
-		// if direction is almost parallel, we adjust it
-		if(this.direction <25){
-			this.direction++;
-		}else if(this.direction > 155 && this.direction <=180){
-			this.direction--;
-		}else if (this.direction >180 && this.direction < 205){
-			this.direction++;
-		}else if(this.direction >335){
-			this.direction--;
-		}			
-			
-		
-        this.directionInRads = this.direction * Math.PI / 180;  // radians
-
-        this.x_component = Math.cos(this.directionInRads)*this.speed;
-        this.y_component = Math.sin(this.directionInRads)*this.speed;
-        this.directionVector.setCompX(this.x_component);
-        this.directionVector.setCompY(this.y_component);
-    }
-    
-	// model first defines deltas, then calculates if there is collisions 
-	// and after that calls this.countNewposition to reposition the ball
-    this.setMovement = function(){
-        this.dX = this.x_component;
-        this.dY = this.y_component;
-    }
-    this.recalculate();
-    
-    this.countNewPosition = function(){
-        if(this.dX || this.dX){
-            this.x = this.x + this.dX;
-            this.y = this.y + this.dY;
-            this.dX = 0;
-            this.dY = 0;
-        }
-    }
-}
-
-
 // Controller
 arkanoid.controller = {};
 
@@ -603,8 +491,14 @@ arkanoid.controller.Gamecontroller = function(model){
         }
         
         model.doATick();
+
+        if (model.gameIsActive){
+        	requestAnimFrame(arkanoidController.tick);
+        }else{
+        	console.log("ending game");
+        	return;
+        }
         
-        requestAnimFrame(arkanoidController.tick);
     }
     
 }
@@ -642,7 +536,6 @@ arkanoid.controller.Gamecontroller.keyIsDown = (function(){
 
 
 // Two-dimensional vector (with starting point) class
-
 arkanoid.model.V = function(x_, y_, x_component_, y_component_){
     var x = x_;
     var y = y_;
