@@ -52,7 +52,7 @@ arkanoid.Menu = (function(space){
     var isActive;
     var node = null;
     var enterPressed=false;
-    this.lastStroke;
+    //this.lastStroke;
     function initialize(nodeToRunOn){
         if(isActive)
             return

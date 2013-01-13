@@ -42,7 +42,7 @@ arkanoid.model.Game = function(view){
 	
 	this.gameIsActive;
     
-    var levels = JSON.parse('{"levels":[{"level":"1","background":"","blocks":[{"x":"1","y":"2","type":"1","color":"red"},{"x":"2","y":"2","type":"1","color":"red"},{"x":"3","y":"2","type":"1","color":"red"},{"x":"4","y":"2","type":"1","color":"red"},{"x":"5","y":"2","type":"1","color":"red"},{"x":"6","y":"2","type":"1","color":"red"},{"x":"7","y":"2","type":"1","color":"red"},{"x":"8","y":"2","type":"1","color":"red"},{"x":"9","y":"2","type":"1","color":"red"},{"x":"10","y":"2","type":"1","color":"red"},{"x":"11","y":"2","type":"1","color":"red"},{"x":"12","y":"2","type":"1","color":"red"},{"x":"13","y":"2","type":"1","color":"red"},{"x":"1","y":"3","type":"1","color":"blue"},{"x":"2","y":"3","type":"1","color":"blue"},{"x":"3","y":"3","type":"1","color":"blue"},{"x":"4","y":"3","type":"1","color":"blue"},{"x":"5","y":"3","type":"1","color":"blue"},{"x":"6","y":"3","type":"1","color":"blue"},{"x":"7","y":"3","type":"1","color":"blue"},{"x":"8","y":"3","type":"1","color":"blue"},{"x":"9","y":"3","type":"1","color":"blue"},{"x":"10","y":"3","type":"1","color":"blue"},{"x":"11","y":"3","type":"1","color":"blue"},{"x":"12","y":"3","type":"1","color":"blue"},{"x":"13","y":"3","type":"1","color":"blue"},{"x":"1","y":"4","type":"1","color":"orange"},{"x":"2","y":"4","type":"1","color":"orange"},{"x":"3","y":"4","type":"1","color":"orange"},{"x":"4","y":"4","type":"1","color":"orange"},{"x":"5","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"1","color":"orange"},{"x":"7","y":"4","type":"1","color":"orange"},{"x":"8","y":"4","type":"1","color":"orange"},{"x":"9","y":"4","type":"1","color":"orange"},{"x":"10","y":"4","type":"1","color":"orange"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"12","y":"4","type":"1","color":"orange"},{"x":"13","y":"4","type":"1","color":"orange"}]},{"level":"2","background":"","blocks":[{"x":"3","y":"6","type":"3","color":"gray"},{"x":"4","y":"6","type":"3","color":"gray"},{"x":"5","y":"6","type":"3","color":"gray"},{"x":"6","y":"6","type":"3","color":"gray"},{"x":"7","y":"6","type":"3","color":"gray"},{"x":"8","y":"6","type":"3","color":"gray"},{"x":"9","y":"6","type":"3","color":"gray"},{"x":"10","y":"6","type":"3","color":"gray"},{"x":"11","y":"6","type":"3","color":"gray"},{"x":"12","y":"6","type":"3","color":"gray"},{"x":"13","y":"6","type":"3","color":"gray"},{"x":"11","y":"4","type":"1","color":"orange"},{"x":"6","y":"4","type":"2","color":"yellow"},{"x":"8","y":"4","type":"2","color":"yellow"}]}]}');
+    var levels = arkanoid.levels;
     
     var maxLevelCount = levels['levels'].length;
 
@@ -91,15 +91,19 @@ arkanoid.model.Game = function(view){
     }
     
     this.doATick = function(){
-
+		// if all blocks are popped, then end level
     	if (blocksLeft == 0 ){
     		levelCompleted();
     		return;
     	}
+		
+		// if out of balls, end game
     	if (balls.length == 0 && ballsLeft == 0){
     		this.endGame();
     		return;
     	}
+		
+		// if no balls in game, but some left, stick one to paddle
     	if(balls.length == 0 && ballsLeft > 0){		
     	    balls.push(new arkanoid.model.Ball(paddle.x,Math.floor(paddle.y -11),'white'));    	    
     	    paddle.ballThatsStuckOnPaddle = balls[0];
@@ -107,15 +111,10 @@ arkanoid.model.Game = function(view){
     	    view.ballsLeft--;
     	    view.updateTexts();
     	    view.addBall(balls[0]);
-			/*view.init({
-				blocks: null,
-				balls: balls,
-				paddle: null
-			});*/
     	}
     
-        // move paddle
-        if (paddle.direction!==0){
+        // if paddle is moved, move it
+        if (paddle.direction !== 0){
             paddle.countNewPosition();
             paddle.direction = 0;
         }
@@ -124,12 +123,12 @@ arkanoid.model.Game = function(view){
         for(var i = 0; i< balls.length; i++){
             if (balls[i].speed !==0){
                 balls[i].setMovement();
-                checkCollisions(balls[i]);
+				checkCollisions(balls[i]);
             }
-            balls[i].countNewPosition();
+            balls[i].setNewPosition();
         }
+		
         // remove balls that are not active anymore
-
         for ( i = balls.length-1; i>=0; i--){
         	if (!balls[i].active){
         		removeBall(i);
@@ -158,7 +157,7 @@ arkanoid.model.Game = function(view){
         }
 
         for (var i = 0; i<balls.length; i++){
-            if(paddle.ballThatsStuckOnPaddle == balls[i]){
+            if(paddle.ballThatsStuckOnPaddle == balls[i]){  // move also ball that is stuck on the paddle
                 balls[i].dX = paddle.dX;
             }else if(distanceFromPointToObject(paddle, balls[i].x, balls[i].y, -paddle.dX, 0).closestToHit <= balls[i].radius){
                 paddle.setMovement(0);
@@ -171,7 +170,7 @@ arkanoid.model.Game = function(view){
 	
 	// Called by controller
     this.enterPressed = function(){
-        paddle.enterPressed();
+        paddle.enterPressed();  // tell paddle to release ball or do other stuff
     }
     
     function removeBall(index){
@@ -209,6 +208,7 @@ arkanoid.model.Game = function(view){
 	}
 	
     function checkCollisions(ball){
+		// first check that ball does not escape from gamearea
         if(ball.x + ball.dX + ball.radius >= view.width){
             ball.direction = 180- ball.direction;
             ball.recalculate();
@@ -220,11 +220,9 @@ arkanoid.model.Game = function(view){
             ball.setMovement();
         }
 
-
         if(ball.y + ball.dY - ball.radius > view.height){
         	ball.speed = 0;
         	ball.active = false;
-
         }
         if(ball.y + ball.dY - ball.radius <=0){
             ball.direction = -ball.direction;
@@ -233,12 +231,12 @@ arkanoid.model.Game = function(view){
         }
         
         // Check if paddle is on the way
-
         var distn;
         var closest;
-        closest = distanceFromPointToObject(paddle, ball.x, ball.y, paddle.dX, 0);
+        closest = distanceFromPointToObject(paddle, ball.x, ball.y, ball.dX, ball.dY);  //paddle.dX, 0);
 
         if (closest.closestToHit <= ball.radius){
+			// calculate direction after collision
             var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
             var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
             var newDirection = collXComp.add(collYComp.scalar(-1));
@@ -247,7 +245,6 @@ arkanoid.model.Game = function(view){
             ball.dX=0;
             ball.dY=0;
             ball.recalculate();
-            ball.setMovement();
             
             // tell paddle that it has been hit
             paddle.ballHitYou(ball, closest.vectorIndexToHit);
@@ -257,7 +254,7 @@ arkanoid.model.Game = function(view){
         
         // to speed things up, we first find out in which column and row ball is now
 		// and then we only look for collisions with blocks around that cell
-		// we assume that method works, so in current cell, there is not active block
+		// we assume that method works, so there should not be active block in current cell
 		var col = Math.floor(ball.x / columnWidth)+1;
 		var row = Math.floor(ball.y / rowHeight)+1;
 		var closeBlocks = new Array();
@@ -273,7 +270,6 @@ arkanoid.model.Game = function(view){
 			}
 		}
 		
-	
 		closest = null;
 		var currentObject = null;
 		var chosenBlock=null;
@@ -286,21 +282,20 @@ arkanoid.model.Game = function(view){
 				closest = currentObject;
 				chosenBlock = closeBlocks[i];
 			}
-
 		}
 		
 		if (closest && closest.closestToHit <= ball.radius){
+			// calculate direction after collision
 			var collXComp = closest.vectorOfCollision.getNormalRH().projection(ball.directionVector);
 			var collYComp = closest.vectorOfCollision.projection(ball.directionVector);
 			var newDirection = collXComp.add(collYComp.scalar(-1));
 			
 			ball.direction=newDirection.getAngle();
-			
 			ball.dX=0;
 			ball.dY=0;
-			ball.speed += .1;
+			ball.speed += .1;  // crank it up a notch
 			ball.recalculate();
-			ball.setMovement();
+			
 			chosenBlock.pop(closest.vectorIndexToHit, ball);
 			if(!chosenBlock.active) {
 				view.removeBlock(chosenBlock.index);
@@ -308,12 +303,13 @@ arkanoid.model.Game = function(view){
 			}
 			return;
 		}		
-        
     }
   
 
 	// Calculates minimum distance between object and (point + delta)
-	// Returns punch of stuff
+	// we calculate collisions in advance and change direction before the actual collision,
+	// so we don't get stuck on objects so easily
+	// Returns a bunch of stuff
     function distanceFromPointToObject(object, x, y, dX, dY){
         var closestToHit;
         var vectorThatBallHit;
@@ -324,9 +320,8 @@ arkanoid.model.Game = function(view){
         var first = true;
         
         vects = object.getVectors();
-        
-        for (var k = 0; k<vects.length; k++){
 
+        for (var k = 0; k<vects.length; k++){
             distanceOfCurrent = vects[k].shortestDistanceFromPoint(x-dX, y-dY).length();
 			distanceOfCurrent = vects[k].shortestDistanceFromPoint(x+dX, y+dY).length();
 

@@ -21,7 +21,7 @@ var media = {"pages": [
 		{"title": "Links",
 		"paragraph":'<a href="https://github.com/enderi">GitHub</a><br/><a href="http://jjvento.users.cs.helsinki.fi">Project time management system (School project) </a>'},
 		{"title":"Arkanoid(ish)",
-		"paragraph":"Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle? <br/><a href='#' id='arkanoid' onClick='runArkanoid($($(\"#movie\")));'>Yes, please!</a><br/>(Use enter to begin & launch and arrows to move the paddle. You may also want to use Chrome.)<br/><div id ='movie'></div>"}]},
+		"paragraph":"<a href='arkanoid.html'>Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle?</a>"}]},
 	{"pagename":"contact",
 	"title":"Contact",
 	"paragraphs":[
@@ -34,6 +34,7 @@ var media = {"pages": [
 var activePage = 0;
 
 $(document).ready(function(){
+	baseUrl = window.location.pathname;
 	changePage(activePage);
 	$("#navigation ul li a").click(function(e){
 		var newActivePage = $("#navigation ul li a").index(this);
@@ -56,5 +57,6 @@ function changePage(){
 	var articleData = media['pages'][activePage];
 	var html = Mustache.render($("#article").html(), articleData);
 	$("#view").html(html);
+	
 	
 }

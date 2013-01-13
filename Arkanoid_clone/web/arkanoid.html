@@ -6,22 +6,22 @@
             <link rel="stylesheet" href="style/style.css" type="text/css" />  
 
     </head>  
-    <body id="index" class="home"> 
+    <body id="index" class="home" style="width:700px;"> 
         <div id ="header"> 
             <h1><strong>Enderi.net</strong></h1>
                 <div id="navigation">
                         <ul> 
                         <li>
-                                <a href="#" class ="chosen" ><img src="img/onebit_01.png"/></a>
+                                <a href="index.html" ><img src="img/onebit_01.png"/></a>
                         </li> 
                         <li>
-                                <a href="#"><img src="img/onebit_18.png" /></a>
+                                <a href="index.html"><img src="img/onebit_18.png" /></a>
                         </li>  
                         <li>
-                                <a href="#"><img src="img/onebit_13.png" /></a>
+                                <a href="index.html"><img src="img/onebit_13.png" /></a>
                         </li> 
                         <li>
-                                <a href="#"><img src="img/onebit_42.png" /></a>
+                                <a href="index.html"><img src="img/onebit_42.png" /></a>
                         </li> 
                         </ul>
                 </div>  
@@ -29,6 +29,25 @@
 
         <!-- Mustache view -->
         <section id="view">
+			<article>
+				<h2>Arkanoidish game</h2>
+				<h3>Controls</h3>
+				<ul>
+					<li>Arrow keys - move paddle</li>
+					<li>Enter - launch ball</li>
+				</ul>
+
+				<div id="movie">
+				</div>
+				<p style="text-align:right;">By: Janne Vento</p>
+				<h3>ToDo:</h3>
+				<ul>
+				<li>Dropping bonus blocks for special paddles</li>
+				<li>Points & Top-list</li>
+				<li>3D FPS-version</li>
+				<li>Third level</li>
+				</ul>				
+			</article>
         </section>
 
 
@@ -47,10 +66,10 @@
         <!-- Script files -->
         <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
 
-        <script type="text/javascript" src="scripts/mustache.js"></script>
+        <!--<script type="text/javascript" src="scripts/mustache.js"></script>-->
         <script type="text/javascript" src="scripts/raphael-min.js"></script>
 
-        <script type="text/javascript" src="scripts/koodi.js"></script>
+        
         <script type="text/javascript" src="scripts/arkanoid_view.js"></script>
         <script type="text/javascript" src="scripts/arkanoid_model.js"></script>
         <script type="text/javascript" src="scripts/arkanoid_controller.js"></script>        
@@ -58,6 +77,11 @@
         <script type="text/javascript" src="scripts/arkanoid_objects.js"></script>
 		<script type="text/javascript" src="scripts/arkanoid_levels.js"></script>
         <script type="text/javascript" src="scripts/arkanoid_menu.js"></script>
-                
+        <script type="text/javascript">
+			$(document).ready(function(){
+				console.log(window.location.pathname);
+				runArkanoid($($("#movie")));
+			});
+		</script>
     </body> 
 </html>
