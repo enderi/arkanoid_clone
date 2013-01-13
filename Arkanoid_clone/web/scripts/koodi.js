@@ -9,9 +9,7 @@ var media = {"pages": [
 	"title":"About the Author",
 	"paragraphs":[
 		{"title":"",
-		"paragraph":"This is <a href='https://plus.google.com/101500422968632355934'>me</a>."},
-		{"title":"",
-		"paragraph":"Then."}
+		"paragraph":"This is <a href='https://plus.google.com/101500422968632355934'>me</a>... then."}
 	]},
 	{"pagename":"stuff",
 	"title":"Files & Stuff",
@@ -19,14 +17,14 @@ var media = {"pages": [
 		{"title":"Now, what is this?",
 		"paragraph":"Here you might find something to download."},
 		{"title": "Links",
-		"paragraph":'<a href="https://github.com/enderi">GitHub</a><br/><a href="http://jjvento.users.cs.helsinki.fi">Project time management system (School project) </a>'},
+		"paragraph":'<ul><li><a href="https://github.com/enderi">GitHub</a></li><li><a href="http://jjvento.users.cs.helsinki.fi">Project time management system (School project) </a></li></ul>'},
 		{"title":"Arkanoid(ish)",
-		"paragraph":"<a href='arkanoid.html'>Fancy <span style='text-decoration :line-through'>a game of Arkanoid</span> to watch moving balls and a paddle?</a>"}]},
+		"paragraph":"<a href='arkanoid.html'>Fancy a round of Arkanoidish game?</a>"}]},
 	{"pagename":"contact",
 	"title":"Contact",
 	"paragraphs":[
 		{"title":"Contact information",
-		"paragraph":"My email is jannejvento (at) gmail.com"}
+		"paragraph":"jannejvento (at) gmail.com"}
 	]}
 ]};
 
@@ -51,6 +49,7 @@ $(document).ready(function(){
 		});
 		e.preventDefault();
 	});
+	
 });
 
 function changePage(){
